@@ -1,0 +1,87 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: gcc.exe build project",
+            "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+                        "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "-I${workspaceFolder}/include",
+                "${workspaceFolder}/main.c",
+                "${workspaceFolder}/src/*.c",
+                "-o",
+                "${workspaceFolder}/dist/${workspaceFolderBasename}.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Build multi-file C project with headers (auto-detect .c files)"
+        },
+        {
+            "type": "shell",
+            "label": "Create dist folder",
+            "command": "mkdir",
+            "args": [
+                "-p",
+                "dist"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "detail": "Create dist directory if it doesn't exist"
+        },
+        {
+            "type": "shell",
+            "label": "Build and Run",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Create dist folder",
+                "C/C++: gcc.exe build project"
+            ],
+            "command": "${workspaceFolder}/dist/${workspaceFolderBasename}.exe",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "detail": "Build project and run executable"
+        },
+        {
+            "type": "shell",
+            "label": "Clean build",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "dist"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "detail": "Clean build artifacts"
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: gcc.exe build with make",
+            "command": "make",
+            "args": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Build using Makefile"
+        }
+    ],
+    "version": "2.0.0"
+}
