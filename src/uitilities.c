@@ -17,3 +17,14 @@ void read_input(char *str, int size) {
         while((ch = getchar()) != '\n' && ch != EOF);
     }
 }
+
+
+#include <stdlib.h>
+
+void clear_console(void) {
+#ifdef _WIN32
+    system("cls");   // Windows
+#else
+    system("clear"); // Unix/Linux/Mac
+#endif
+}

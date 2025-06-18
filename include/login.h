@@ -1,10 +1,12 @@
 #ifndef LOGIN_H
 #define LOGIN_H
 
-
-#define MAX_USER_NAME_LENGTH 15
-#define MAX_USER_PASSWORD_LENGTH 15
-#define MAX_NUMBER_OF_USERS 5
+enum Login_Constraints {
+    MAX_USER_NAME_LENGTH = 15,
+    MAX_USER_PASSWORD_LENGTH = 15,
+    MAX_NUMBER_OF_USERS = 5,
+    MAX_LOGIN_ATTEMPTS = 3,
+};
 
 typedef struct {
     char username[MAX_USER_NAME_LENGTH];

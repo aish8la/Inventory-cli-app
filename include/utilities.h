@@ -3,6 +3,8 @@
 
 void read_input(char *str, int size);
 
+void clear_console(void);
+
 
 
 #endif
