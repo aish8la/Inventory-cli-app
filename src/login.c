@@ -17,6 +17,7 @@ int login(void) {
 
     FILE *fp = fopen("configs.dat", "rb");
 
+    //if configs.dat does not exist, create it and write the default user creds into the file
     if(fp == NULL) {
         user_data.user_arr[0] = default_user;
         user_data.user_count = 1;
@@ -26,9 +27,31 @@ int login(void) {
         fp = fopen("configs.dat","rb");
     }
 
-    int user_count = fread(&user_data, sizeof(User_Array), 1, fp);
+    //to check if the user struc is read from file
+    int read_config_count = fread(&user_data, sizeof(User_Array), 1, fp);
 
-    printf("%d", user_data.user_count);
+    fclose(fp);
+
+    char input_user_name[MAX_USER_NAME_LENGTH];
+    char input_user_pass[MAX_USER_PASSWORD_LENGTH];
+
+    printf("Enter User Name: ");
+    fgets(input_user_name, sizeof(input_user_name), stdin); //using fgets to read the input buffer stdin instead of scanf to allow for new lines
+    input_user_name[strcspn(input_user_name, "\n")] = '\0'; //find the index of new line and replace with null terminator. new line is recorded by fgets when pressing enter
+
+    printf("Enter Password: ");
+    fgets(input_user_pass, sizeof(input_user_pass), stdin);
+    input_user_pass[strcspn(input_user_pass, "\n")] = '\0';
+
+    for (int i = 0; i < user_data.user_count; i++) {
+        if (strcmp(user_data.user_arr[i].username, input_user_name) == 0 &&
+            strcmp(user_data.user_arr[i].username, input_user_name) == 0) {
+                printf("Login successful! Role: %s\n", user_data.user_arr[i].role);
+                return 1;
+            }
+    }
+
+    printf("Login failed. Invalid username or password.\n");
 
     return 0;
     
