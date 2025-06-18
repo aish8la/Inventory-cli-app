@@ -37,12 +37,10 @@ int login(void) {
     char input_user_pass[MAX_USER_PASSWORD_LENGTH];
 
     printf("Enter User Name: ");
-    fgets(input_user_name, sizeof(input_user_name), stdin); //using fgets to read the input buffer stdin instead of scanf to allow for new lines
-    input_user_name[strcspn(input_user_name, "\n")] = '\0'; //find the index of new line and replace with null terminator. new line is recorded by fgets when pressing enter
+    read_input(input_user_name, sizeof(input_user_name));
 
     printf("Enter Password: ");
-    fgets(input_user_pass, sizeof(input_user_pass), stdin);
-    input_user_pass[strcspn(input_user_pass, "\n")] = '\0';
+    read_input(input_user_pass, sizeof(input_user_pass));
 
     for (int i = 0; i < user_data.user_count; i++) {
         if (strcmp(user_data.user_arr[i].username, input_user_name) == 0 &&
