@@ -3,8 +3,9 @@
 #include <string.h>
 
 /*This function will read the input into a buffer, replace \n with \0 if present and 
-clear the input buffer of chars if buffer overflows and input buffer has any leftover due to it*/
+clear the input buffer of chars if buffer overflows and if input buffer has any leftover due to it*/
 void read_input(char *str, int size) {
+
     fgets(str, size, stdin);
 
     char *str_ptr = strchr(str, '\n');
@@ -13,7 +14,6 @@ void read_input(char *str, int size) {
         *str_ptr = '\0';
     } else {
         int ch;
-
         while((ch = getchar()) != '\n' && ch != EOF);
     }
 }
@@ -27,4 +27,12 @@ void clear_console(void) {
 #else
     system("clear"); // Unix/Linux/Mac
 #endif
+}
+
+/*A customer function to wait for input even if input buffer has unconsumed input
+this will consume input with fgets.*/
+void wait_for_enter(void) {
+    char buf[50];
+    printf("\nPress Enter to continue...");
+    fgets(buf, sizeof(buf), stdin);
 }

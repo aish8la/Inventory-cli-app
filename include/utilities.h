@@ -5,6 +5,8 @@ void read_input(char *str, int size);
 
 void clear_console(void);
 
+void wait_for_enter(void);
+
 
 
 #endif

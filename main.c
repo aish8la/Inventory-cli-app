@@ -23,8 +23,7 @@ int main(void) {
 
         if(rem_logins != 0) {
             printf("You have %d more attempts left\n", rem_logins);
-            printf("Press Enter to try again...");
-            getchar();
+            wait_for_enter();
         }
 
     } while (login_attempts < MAX_LOGIN_ATTEMPTS);
@@ -35,7 +34,7 @@ int main(void) {
         return 0;
     }
     
-    getchar();
+    wait_for_enter();
 
     return 0;
 }
