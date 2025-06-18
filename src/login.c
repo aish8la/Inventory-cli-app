@@ -50,8 +50,6 @@ int login(void) {
             }
     }
 
-    printf("Login failed. Invalid username or password.\n");
-
     return 0;
     
 }

@@ -12,13 +12,19 @@ int main(void) {
     {
         clear_console();
 
-        printf("Remaining Login Attempts: %d \n\n", rem_logins);
-
         if(login() == 1) {
             break;
         } else {
             login_attempts++;
             rem_logins--;
+        }
+
+        printf("\n\nLogin failed. Invalid username or password.\n\n");
+
+        if(rem_logins != 0) {
+            printf("You have %d more attempts left\n", rem_logins);
+            printf("Press Enter to try again...");
+            getchar();
         }
 
     } while (login_attempts < MAX_LOGIN_ATTEMPTS);
