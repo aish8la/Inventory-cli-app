@@ -2,6 +2,7 @@
 #include "login.h"
 #include <stdlib.h>
 #include "utilities.h"
+#include "menu.h"
 
 int main(void) {
 
@@ -33,6 +34,8 @@ int main(void) {
         printf("Max Login Attempts reached, stopping program");
         return 0;
     }
+
+    run_main_menu();
     
     wait_for_enter();
 
