@@ -44,7 +44,7 @@ int login(void) {
 
     for (int i = 0; i < user_data.user_count; i++) {
         if (strcmp(user_data.user_arr[i].username, input_user_name) == 0 &&
-            strcmp(user_data.user_arr[i].username, input_user_name) == 0) {
+            strcmp(user_data.user_arr[i].password, input_user_pass) == 0) {
                 printf("Login successful! Role: %s\n", user_data.user_arr[i].role);
                 return 1;
             }
