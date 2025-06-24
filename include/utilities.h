@@ -7,6 +7,6 @@ void clear_console(void);
 
 void wait_for_enter(void);
 
-
+void clear_input_buffer(void);
 
 #endif

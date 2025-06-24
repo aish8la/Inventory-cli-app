@@ -18,7 +18,7 @@ void read_input(char *str, int size) {
     }
 }
 
-
+//A macro to set the clear_console function based on operating system
 #include <stdlib.h>
 
 void clear_console(void) {
@@ -35,4 +35,9 @@ void wait_for_enter(void) {
     char buf[50];
     printf("\nPress Enter to continue...");
     fgets(buf, sizeof(buf), stdin);
+}
+
+void clear_input_buffer(void) {
+    int ch;
+    while((ch = getchar()) != '\n' && ch != EOF);
 }
