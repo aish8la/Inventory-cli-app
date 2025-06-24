@@ -33,9 +33,10 @@ void setting_menu(void) {
 contains a list of defined menu items and display them on the CLI*/
 void run_menu(const char* title, Menu_Item* items, int count) {
     int choice;
-    clear_console();
+    
 
     while (1) {
+        clear_console();
         printf("\n ======== %s ======= \n", title);
 
         for(int i = 0; i < count; i++) {
@@ -45,6 +46,7 @@ void run_menu(const char* title, Menu_Item* items, int count) {
 
         printf("Chose => ");
         scanf("%d", &choice);
+        clear_input_buffer();
         clear_console();
 
         if(choice == 0) {
@@ -53,8 +55,8 @@ void run_menu(const char* title, Menu_Item* items, int count) {
 
         if(choice < 1 || choice > count) {
 
-            printf("\n Invalid Choice. Try again.");
-
+            printf("\nInvalid Choice. Try again.");
+            wait_for_enter();
             continue;
         }
 

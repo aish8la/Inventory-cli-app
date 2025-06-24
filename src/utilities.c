@@ -32,9 +32,10 @@ void clear_console(void) {
 /*A customer function to wait for input even if input buffer has unconsumed input
 this will consume input with fgets.*/
 void wait_for_enter(void) {
-    char buf[50];
+    int ch;
+
     printf("\nPress Enter to continue...");
-    fgets(buf, sizeof(buf), stdin);
+    while ((ch = getchar()) != '\n' && ch != EOF);
 }
 
 void clear_input_buffer(void) {
