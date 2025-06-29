@@ -41,6 +41,11 @@ int login(void) {
     //to check if the user struc is read from file
     int read_config_count = fread(&user_data, sizeof(User_Array), 1, fp);
 
+    if(read_config_count < 1) {
+        fprintf(stderr, "Failed reading config.dat");
+        return 1;
+    }
+
     fclose(fp);
 
     char input_user_name[MAX_USER_NAME_LENGTH];
