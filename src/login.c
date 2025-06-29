@@ -24,6 +24,8 @@ User_Array user_data = {
     3
 };
 
+extern User *current_user = NULL;
+
 int login(void) {
 
     FILE *fp = fopen("configs.dat", "rb");
@@ -53,7 +55,8 @@ int login(void) {
     for (int i = 0; i < user_data.user_count; i++) {
         if (strcmp(user_data.user_arr[i].username, input_user_name) == 0 &&
             strcmp(user_data.user_arr[i].password, input_user_pass) == 0) {
-                printf("Login successful! User: %s\n", user_data.user_arr[i].username);
+                current_user = &user_data.user_arr[i];
+                printf("Login successful! User: %s\n", current_user->username);
                 wait_for_enter();
                 return 1;
             }
