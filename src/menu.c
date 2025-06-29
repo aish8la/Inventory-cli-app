@@ -4,6 +4,7 @@
 #include "string.h"
 #include <stdlib.h>
 #include <login.h>
+#include "item_menu.h"
 
 /*This is a type def of a Menu item structure which will hold the pointer to the menu item function
 and the label of the menu item
@@ -18,21 +19,11 @@ typedef struct {
 //TODO:move this to a session source and header file. currently need to include login.h to access this
 extern User current_user;
 
-/*These are main menu items for testing*/
-void invent_menu(void) {
-    printf("This is the Inventory Transaction Menu");
-    wait_for_enter();
-}
+/*These are prototypes of the main menu items. function definitions are below*/
+void invent_menu(void);
+void item_menu(void);
+void setting_menu(void);
 
-void item_menu(void) {
-    printf("This is the Item Menu");
-    wait_for_enter();
-}
-
-void setting_menu(void) {
-    printf("This is the setting menu");
-    wait_for_enter();
-}
 
 //This function will return a filtered list of menu items and is a helper for the run_menu function
 //It accepts the original menu list, the count for the list and a pointer to the returned list count variable
@@ -86,7 +77,7 @@ void run_menu(const char* title, Menu_Item* items, int count) {
         }
         printf("0. Back\n");
 
-        printf("Chose => ");
+        printf("Choose => ");
         scanf("%d", &choice);
         clear_input_buffer();
         clear_console();
@@ -126,3 +117,29 @@ void run_main_menu(void) {
     run_menu(title, main_menu, menu_count);
 }
 
+void item_menu(void) {
+
+    Menu_Item item_menu[] = {
+        {"Add Item", add_item, 2},
+        {"View Items", view_items, 1},
+        {"Search Item", search_item, 1},
+        {"Edit Item", edit_item, 2},
+        {"Delete Item", delete_item, 1},
+    };
+
+    int menu_count = sizeof(item_menu) / sizeof(item_menu[0]);
+
+    const char* title = "Item Menu";
+
+    run_menu(title, item_menu, menu_count);
+}
+
+void invent_menu(void) {
+    printf("This is the Inventory Transaction Menu");
+    wait_for_enter();
+}
+
+void setting_menu(void) {
+    printf("This is the setting menu");
+    wait_for_enter();
+}
