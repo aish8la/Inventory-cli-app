@@ -3,8 +3,16 @@
 #include <stdlib.h>
 #include "utilities.h"
 #include "menu.h"
+#include "init_db.h"
 
 int main(void) {
+
+    int db_rc = initialize_db();
+
+    if(db_rc == 1) {
+        printf("Failed to initialize DB");
+        return 1;
+    }
 
     int login_attempts = 0;
     int rem_logins = MAX_LOGIN_ATTEMPTS;
