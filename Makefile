@@ -1,6 +1,6 @@
 # Compiler and flags
 CC=gcc
-CFLAGS=-I./include -Wall -g
+CFLAGS=-I./include -I./external/include -Wall -g
 
 # Directories
 SRCDIR=src
@@ -8,10 +8,18 @@ INCDIR=include
 DISTDIR=dist
 OBJDIR=obj
 
-# Source files and objects
+EXTSRCDIR=external/src
+EXTINCDIR=external/include
+EXTOBJDIR=$(OBJDIR)/external
+
+# Source files
 SOURCES=$(wildcard $(SRCDIR)/*.c) main.c
 OBJECTS=$(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 OBJECTS:=$(OBJECTS:main.c=$(OBJDIR)/main.o)
+
+# External sources and objects
+EXTSOURCES=$(wildcard $(EXTSRCDIR)/*.c)
+EXTOBJECTS=$(EXTSOURCES:$(EXTSRCDIR)/%.c=$(EXTOBJDIR)/%.o)
 
 # Target executable
 TARGET=$(DISTDIR)/program.exe
@@ -19,24 +27,31 @@ TARGET=$(DISTDIR)/program.exe
 # Default target
 all: $(TARGET)
 
-# Create target executable in dist folder
-$(TARGET): $(OBJECTS) | $(DISTDIR)
-	$(CC) -o $@ $(OBJECTS)
+# Create target executable
+$(TARGET): $(OBJECTS) $(EXTOBJECTS) | $(DISTDIR)
+	$(CC) -o $@ $(OBJECTS) $(EXTOBJECTS)
 	@echo "Build complete! Executable created at $(TARGET)"
 
-# Compile source files to object files
+# Compile internal source files
 $(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/main.o: main.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Create directories if they don't exist
+# Compile external source files
+$(EXTOBJDIR)/%.o: $(EXTSRCDIR)/%.c | $(EXTOBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Create directories
 $(DISTDIR):
 	mkdir -p $(DISTDIR)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
+
+$(EXTOBJDIR):
+	mkdir -p $(EXTOBJDIR)
 
 # Clean build artifacts
 clean:
@@ -46,7 +61,7 @@ clean:
 # Clean and rebuild
 rebuild: clean all
 
-# Install/copy to another location (optional)
+# Install/copy to another location
 install: $(TARGET)
 	cp $(TARGET) /usr/local/bin/
 
