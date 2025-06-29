@@ -1,6 +1,6 @@
 # Compiler and flags
 CC=gcc
-CFLAGS=-I./include -I./external/include -Wall -g
+CFLAGS=-I./include -I./external/include -Wall -g -Wno-unused-but-set-variable
 
 # Directories
 SRCDIR=src
