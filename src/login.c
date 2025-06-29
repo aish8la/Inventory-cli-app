@@ -3,25 +3,33 @@
 #include "login.h"
 #include "utilities.h"
 
-
-const User default_user = {
-    "admin",
-    "1234",
-    "admin",
+User_Array user_data = {
+    {
+        {
+            "admin",
+            "123",
+            3
+        },
+        {
+            "user",
+            "123",
+            2
+        },
+        {
+            "read",
+            "123",
+            1
+        }
+    },
+    3
 };
 
-User_Array user_data;
-
 int login(void) {
-
-    User user_arr[MAX_NUMBER_OF_USERS];
 
     FILE *fp = fopen("configs.dat", "rb");
 
     //if configs.dat does not exist, create it and write the default user creds into the file
     if(fp == NULL) {
-        user_data.user_arr[0] = default_user;
-        user_data.user_count = 1;
         fp = fopen("configs.dat", "wb");
         fwrite(&user_data, sizeof(User_Array), 1, fp);
         fclose(fp);
@@ -45,7 +53,7 @@ int login(void) {
     for (int i = 0; i < user_data.user_count; i++) {
         if (strcmp(user_data.user_arr[i].username, input_user_name) == 0 &&
             strcmp(user_data.user_arr[i].password, input_user_pass) == 0) {
-                printf("Login successful! Role: %s\n", user_data.user_arr[i].role);
+                printf("Login successful! User: %s\n", user_data.user_arr[i].username);
                 wait_for_enter();
                 return 1;
             }

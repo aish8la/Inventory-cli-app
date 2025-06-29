@@ -11,7 +11,7 @@ enum Login_Constraints {
 typedef struct {
     char username[MAX_USER_NAME_LENGTH];
     char password[MAX_USER_PASSWORD_LENGTH];
-    char role[10];
+    int access_level; //user access level 1 to 3 with 3 being the highest access level and 1 being read only with limited access
 } User;
 
 typedef struct {
