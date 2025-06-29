@@ -110,9 +110,7 @@ void run_menu(const char* title, Menu_Item* items, int count) {
     filtered_list = NULL;//null assigned to pointer to prevent issues with dangling pointer
 }
 
-/*This is the run main menu function that will call the run_menu function with the main menu item list
-This is for testing
-Replace this with conditional list for when role based permission functionality is added*/
+/*This is the run main menu function that will call the run_menu function with the main menu item list*/
 void run_main_menu(void) {
 
     Menu_Item main_menu[] = {
