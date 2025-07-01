@@ -45,7 +45,5 @@ int main(void) {
 
     run_main_menu();
     
-    wait_for_enter();
-
     return 0;
 }
