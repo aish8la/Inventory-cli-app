@@ -56,6 +56,7 @@ void add_item(void) {
                 printf("Item code already exists. Please use a unique code.\n");
             }
         sqlite3_close(db);
+        wait_for_enter();
         return;
     }
 
