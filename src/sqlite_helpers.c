@@ -54,3 +54,18 @@ int run_sql_with_cb(
     return 0;
 
 }
+
+int prepare_stmt(sqlite3 *db, char *sql, sqlite3_stmt **stmt) {
+    
+    int rc = sqlite3_prepare_v2(db, sql, -1, stmt, NULL);
+    
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 1;
+    }
+
+    return 0;
+}
+
+    

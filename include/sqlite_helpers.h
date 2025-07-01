@@ -14,4 +14,6 @@ int run_sql_with_cb(
     void *cbdata
 );
 
+int prepare_stmt(sqlite3 *db, char *sql, sqlite3_stmt **stmt);
+
 #endif
