@@ -30,7 +30,7 @@ int check_init_flag(void) {
         sqlite3_close(db);
         return 1;
     }
-
+  
     sqlite3_close(db);
     db = NULL;
 
@@ -42,6 +42,29 @@ int check_init_flag(void) {
 
 }
 
+//These are the initial queries to run
+const char *initial_queries[] = {
+    //1) The first query creates an item table
+    "CREATE TABLE IF NOT EXISTS items (" 
+    "id INTEGER PRIMARY KEY NOT NULL,"
+    "item_code TEXT UNIQUE NOT NULL,"
+    "item_name TEXT);",
+
+    //2)This query creates flags table and insert flag value
+    "CREATE TABLE IF NOT EXISTS flags (flag_name TEXT UNIQUE, flag_value INT);",
+
+    //3)This query insert flag value
+    "INSERT INTO flags (flag_name, flag_value) VALUES ('not_initial_run', 1);",
+
+    //4)These queries insert items
+    "INSERT INTO items (item_code, item_name) VALUES "
+    "('ITM-001', 'PENCIL'),"
+    "('ITM-002', 'ERASER'),"
+    "('ITM-003', 'MARKER'),"
+    "('ITM-004', 'RULER'),"
+    "('ITM-005', 'SHARPENER');"
+};
+
 int initialize_db(void) {
 
     /*check init returns 0 if the current run is not the first time so this check will return without running
@@ -51,22 +74,18 @@ int initialize_db(void) {
     }
 
     sqlite3 *db;
-    int rc;
-    char *err_msg = NULL;
-    char *init_item_table = "CREATE TABLE IF NOT EXISTS items (" //The first query creates an item table
-                        "id INTEGER PRIMARY KEY NOT NULL,"
-                        "item_code TEXT UNIQUE NOT NULL,"
-                        "item_name TEXT);"
-                        "CREATE TABLE IF NOT EXISTS flags (flag_name TEXT UNIQUE, flag_value INT);"//This query creates flags table
-                        "INSERT INTO flags (flag_name, flag_value) VALUES ('not_initial_run', 1)";
 
     if(open_db(&db) != 0) {
         exit(1);
     }
 
-    if(run_sql(db, init_item_table) != 0) {
-        sqlite3_close(db);
-        return 1;
+    int query_count = sizeof(initial_queries) / sizeof(initial_queries[0]);
+
+    for (int i = 0; i < query_count; i++) {
+        if(run_sql(db, initial_queries[i]) != 0) {
+            sqlite3_close(db);
+            return 1;
+        }
     }
 
     sqlite3_close(db);
