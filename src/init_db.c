@@ -58,16 +58,30 @@ int check_init_flag(void) {
 const char *initial_queries[] = {
     //1) The first query creates an item table
     "CREATE TABLE IF NOT EXISTS items (" 
-    "id INTEGER PRIMARY KEY NOT NULL,"
+    "id INTEGER PRIMARY KEY AUTOINCREMENT,"
     "item_code TEXT UNIQUE NOT NULL,"
     "item_name TEXT,"
     "current_qty INTEGER DEFAULT 0,"
     "total_value REAL DEFAULT 0.0);",
 
-    //3)This query updates flag value
+    //2)This creates the item addition table
+    "CREATE TABLE IF NOT EXISTS stock_additions ("
+    "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    "added_qty INTEGER CHECK(added_qty != 0),"
+    "unit_cost REAL DEFAULT 0,"
+    "unused_qty INTEGER,"
+    "item_id INTEGER NOT NULL);",
+
+    //3)This creates the item issue table
+    "CREATE TABLE IF NOT EXISTS stock_issues ("
+    "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+    "issued_qty INTEGER CHECK(issued_qty != 0),"
+    "stock_addition_id INTEGER NOT NULL);",
+
+    //4)This query updates flag value
     "UPDATE flags SET flag_value = 1 WHERE flag_name = 'not_initial_run';",
 
-    //4)These queries insert items
+    //5)These queries insert items
     "INSERT INTO items (item_code, item_name) VALUES "
     "('ITM-001', 'PENCIL'),"
     "('ITM-002', 'ERASER'),"
