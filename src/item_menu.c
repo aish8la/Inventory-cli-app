@@ -253,5 +253,81 @@ void edit_item(void) {
 }
 
 void delete_item(void) {
-    
+    sqlite3 *db;
+
+    if(open_db(&db) != 0) {
+        exit(1);
+    }
+
+    sqlite3_stmt *stmt;
+    char *select_sql = "SELECT item_code, item_name "
+                "FROM items "
+                "WHERE item_code = ?;";
+    char *delete_sql = "DELETE FROM items "
+                "WHERE item_code = ?;";
+
+    if(prepare_stmt(db, select_sql, &stmt) == 1) {
+        sqlite3_close(db);
+        return;
+    }
+
+    char input[itm_cd_ln];
+
+    printf("Enter Item Code of Item to Delete: ");
+    read_input(input, sizeof(input));
+
+    sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
+
+
+    if(step_and_check(db, stmt, 1) != 0) {
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        wait_for_enter();
+        return;
+    }
+
+    printf("\nItem Details\n");
+    printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
+    printf("===================================\n");
+    const unsigned char *item_name = sqlite3_column_text(stmt, 1);
+    const unsigned char *item_code = sqlite3_column_text(stmt, 0);
+
+    printf("%-12.10s%-22.20s\n", item_code, item_name);
+ 
+    sqlite3_finalize(stmt);
+
+    printf("Confirm Delete Action [Y]es / [N]o => ");
+
+    char delete_confirm = 'N';
+
+    scanf("%c", &delete_confirm);
+    clear_input_buffer();
+
+    if(tolower(delete_confirm) != 'y') {
+        sqlite3_close(db);
+        printf("Canceled Delete");
+        wait_for_enter();
+        return;
+    }
+
+    if(prepare_stmt(db, delete_sql, &stmt) == 1) {
+        sqlite3_close(db);
+        return;
+    }
+
+    sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
+
+    if (step_and_check(db, stmt, 0) != 0) {
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        wait_for_enter();
+        return;
+    }
+
+    printf("Record Deleted Successfully");
+
+    sqlite3_finalize(stmt);
+
+    sqlite3_close(db);
+    wait_for_enter();
 }
