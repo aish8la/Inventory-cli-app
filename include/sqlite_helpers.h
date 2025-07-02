@@ -16,4 +16,6 @@ int run_sql_with_cb(
 
 int prepare_stmt(sqlite3 *db, char *sql, sqlite3_stmt **stmt);
 
+int step_and_check(sqlite3 *db, sqlite3_stmt *stmt, int expect_row);
+
 #endif

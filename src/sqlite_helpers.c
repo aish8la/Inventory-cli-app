@@ -73,4 +73,25 @@ int prepare_stmt(sqlite3 *db, char *sql, sqlite3_stmt **stmt) {
     return 0;
 }
 
+int step_and_check(sqlite3 *db, sqlite3_stmt *stmt, int expect_row) {
+    int rc = sqlite3_step(stmt);
+
+    if (expect_row) {
+        if (rc == SQLITE_DONE) {
+            printf("No matching records found.\n");
+            return 1;
+        } else if (rc != SQLITE_ROW) {
+            fprintf(stderr, "SQLite Error: %s\n", sqlite3_errmsg(db));
+            return -1;
+        }
+    } else {
+        if (rc != SQLITE_DONE) {
+            fprintf(stderr, "SQLite Error: %s\n", sqlite3_errmsg(db));
+            return -1;
+        }
+    }
+
+    return 0;
+}
+
     
