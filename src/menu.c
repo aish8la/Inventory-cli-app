@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <login.h>
 #include "item_menu.h"
+#include "invent_menu.h"
 
 /*This is a type def of a Menu item structure which will hold the pointer to the menu item function
 and the label of the menu item
@@ -135,8 +136,20 @@ void item_menu(void) {
 }
 
 void invent_menu(void) {
-    printf("This is the Inventory Transaction Menu");
-    wait_for_enter();
+
+    Menu_Item invent_menu[] = {
+        {"Add Stock", add_stock, 2},
+        {"Issue Stock", issue_stock, 2},
+        {"View Stock Additions", view_additions, 1},
+        {"View Issues", view_issues, 1},
+        {"View Inventory", view_inventory, 1},
+    };
+
+    int menu_count = sizeof(invent_menu) / sizeof(invent_menu[0]);
+
+    const char* title = "Inventory Menu";
+
+    run_menu(title, invent_menu, menu_count);
 }
 
 void setting_menu(void) {
