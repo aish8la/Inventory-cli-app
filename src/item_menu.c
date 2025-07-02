@@ -107,7 +107,46 @@ void view_items(void) {
 }
 
 void search_item(void) {
-    printf("This is the Search Item Function");
+
+    sqlite3 *db;
+
+    if(open_db(&db) != 0) {
+        exit(1);
+    }
+
+    sqlite3_stmt *stmt;
+    char *sql = "SELECT item_code, item_name "
+                "FROM items "
+                "WHERE item_code LIKE ?;";
+
+    if(prepare_stmt(db, sql, &stmt) == 1) {
+        sqlite3_close(db);
+        return;
+    }
+
+    char input[itm_cd_ln];
+    
+
+    printf("Enter Item Code: ");
+    read_input(input, sizeof(input));
+
+    char bind_param[itm_cd_ln + 10];
+
+    snprintf(bind_param, sizeof(bind_param), "%%%s%%", input); // This adds % to the start and end of input so fuzzy search is possible with LIKE clause
+
+    sqlite3_bind_text(stmt, 1, bind_param, -1, SQLITE_TRANSIENT);
+
+    printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
+    printf("===================================\n");
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const unsigned char *item_name = sqlite3_column_text(stmt, 1);
+        const unsigned char *item_code = sqlite3_column_text(stmt, 0);
+
+        printf("%-12.10s%-22.20s\n", item_code, item_name);
+    }
+ 
+    sqlite3_finalize(stmt);
+    sqlite3_close(db);
     wait_for_enter();
 }
 
