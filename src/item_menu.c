@@ -151,7 +151,92 @@ void search_item(void) {
 }
 
 void edit_item(void) {
-    printf("This is the Edit Item Function");
+    sqlite3 *db;
+
+    if(open_db(&db) != 0) {
+        exit(1);
+    }
+
+    sqlite3_stmt *stmt;
+    char *select_sql = "SELECT item_code, item_name "
+                "FROM items "
+                "WHERE item_code = ?;";
+    char *edit_sql = "UPDATE items SET item_code = ?, item_name = ? "
+                "WHERE item_code = ?;";
+
+    if(prepare_stmt(db, select_sql, &stmt) == 1) {
+        sqlite3_close(db);
+        return;
+    }
+
+    char input[itm_cd_ln];
+    char new_itm_code[itm_cd_ln];
+    char new_itm_name[itm_nm_ln];
+    
+
+    printf("Enter Item Code of Item to edit: ");
+    read_input(input, sizeof(input));
+
+    sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
+
+
+
+    int rc = sqlite3_step(stmt);
+    if(rc == SQLITE_DONE) {
+        printf("No Records of the specified ID Found\n");
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        wait_for_enter();
+        return;
+    } else if (rc != SQLITE_ROW) {
+        fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        wait_for_enter();
+        return;
+    }
+
+    printf("\nOld Item Details\n");
+    printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
+    printf("===================================\n");
+    const unsigned char *item_name = sqlite3_column_text(stmt, 1);
+    const unsigned char *item_code = sqlite3_column_text(stmt, 0);
+
+    printf("%-12.10s%-22.20s\n", item_code, item_name);
+ 
+    sqlite3_finalize(stmt);
+
+    printf("\nUpdated Item Details\n\n");
+    printf("Enter Updated Item Code: ");
+    read_input(new_itm_code, sizeof(new_itm_code));
+
+    printf("Enter Updated Item Name: ");
+    read_input(new_itm_name, sizeof(new_itm_name));
+
+    if(prepare_stmt(db, edit_sql, &stmt) == 1) {
+        sqlite3_close(db);
+        return;
+    }
+
+    sqlite3_bind_text(stmt, 1, new_itm_code, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, new_itm_name, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, input, -1, SQLITE_TRANSIENT);
+
+    rc = sqlite3_step(stmt);
+
+    if (rc != SQLITE_DONE) {
+        fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        wait_for_enter();
+        return;
+    }
+
+    printf("Record Updated Successfully");
+
+    sqlite3_finalize(stmt);
+
+    sqlite3_close(db);
     wait_for_enter();
 }
 
