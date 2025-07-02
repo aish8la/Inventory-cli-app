@@ -45,16 +45,23 @@ void add_item(void) {
     printf("Enter Item Name: ");
     read_input(item_name, sizeof(item_name));
 
+    if(item_code[0] == '\0' || item_name[0] == '\0') {
+        printf("Value Cannot be Blank");
+        sqlite3_close(db);
+        wait_for_enter();
+        return;
+    }
+
     //This is where the values from the variables are bound to the sql statement bind parameters as mentioned above
     sqlite3_bind_text(stmt, 1, item_code, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, item_name, -1, SQLITE_TRANSIENT);
 
     //sqlite3_step is used to execute the insert using the prepared statement
-    if(sqlite3_step(stmt) != SQLITE_DONE) {
-        fprintf(stderr, "Sqlite Insert Error: %s\n", sqlite3_errmsg(db));
-            if (sqlite3_errcode(db) == SQLITE_CONSTRAINT) {
-                printf("Item code already exists. Please use a unique code.\n");
-            }
+    if(step_and_check(db, stmt, 0) != 0) {
+        if (sqlite3_errcode(db) == SQLITE_CONSTRAINT) {
+            printf("Item code already exists. Please use a unique code.\n");
+        }
+        sqlite3_finalize(stmt);
         sqlite3_close(db);
         wait_for_enter();
         return;
@@ -136,13 +143,22 @@ void search_item(void) {
 
     sqlite3_bind_text(stmt, 1, bind_param, -1, SQLITE_TRANSIENT);
 
+    int rc, found = 0;
+
     printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
     printf("===================================\n");
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        const unsigned char *item_name = sqlite3_column_text(stmt, 1);
-        const unsigned char *item_code = sqlite3_column_text(stmt, 0);
 
-        printf("%-12.10s%-22.20s\n", item_code, item_name);
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+        found = 1;
+        printf("%-12.10s%-22.20s\n",
+            sqlite3_column_text(stmt, 0),
+            sqlite3_column_text(stmt, 1));
+    }
+
+    if (!found) {
+        printf("No matching records found.\n");
+    } else if (rc != SQLITE_DONE) {
+        fprintf(stderr, "SQLite error: %s\n", sqlite3_errmsg(db));
     }
  
     sqlite3_finalize(stmt);
@@ -180,16 +196,7 @@ void edit_item(void) {
     sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
 
 
-
-    int rc = sqlite3_step(stmt);
-    if(rc == SQLITE_DONE) {
-        printf("No Records of the specified ID Found\n");
-        sqlite3_finalize(stmt);
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
-    } else if (rc != SQLITE_ROW) {
-        fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
+    if(step_and_check(db, stmt, 1) != 0) {
         sqlite3_finalize(stmt);
         sqlite3_close(db);
         wait_for_enter();
@@ -207,11 +214,19 @@ void edit_item(void) {
     sqlite3_finalize(stmt);
 
     printf("\nUpdated Item Details\n\n");
+
     printf("Enter Updated Item Code: ");
     read_input(new_itm_code, sizeof(new_itm_code));
 
     printf("Enter Updated Item Name: ");
     read_input(new_itm_name, sizeof(new_itm_name));
+
+    if(new_itm_code[0] == '\0' || new_itm_name[0] == '\0') {
+        printf("Value Cannot be Blank");
+        sqlite3_close(db);
+        wait_for_enter();
+        return;
+    }
 
     if(prepare_stmt(db, edit_sql, &stmt) == 1) {
         sqlite3_close(db);
@@ -222,10 +237,7 @@ void edit_item(void) {
     sqlite3_bind_text(stmt, 2, new_itm_name, -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 3, input, -1, SQLITE_TRANSIENT);
 
-    rc = sqlite3_step(stmt);
-
-    if (rc != SQLITE_DONE) {
-        fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
+    if (step_and_check(db, stmt, 0) != 0) {
         sqlite3_finalize(stmt);
         sqlite3_close(db);
         wait_for_enter();
@@ -241,6 +253,5 @@ void edit_item(void) {
 }
 
 void delete_item(void) {
-    printf("This is the Delete Item Function");
-    wait_for_enter();
+    
 }
