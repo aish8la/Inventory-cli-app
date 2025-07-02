@@ -60,7 +60,9 @@ const char *initial_queries[] = {
     "CREATE TABLE IF NOT EXISTS items (" 
     "id INTEGER PRIMARY KEY NOT NULL,"
     "item_code TEXT UNIQUE NOT NULL,"
-    "item_name TEXT);",
+    "item_name TEXT,"
+    "current_qty INTEGER DEFAULT 0,"
+    "total_value REAL DEFAULT 0.0);",
 
     //3)This query updates flag value
     "UPDATE flags SET flag_value = 1 WHERE flag_name = 'not_initial_run';",
