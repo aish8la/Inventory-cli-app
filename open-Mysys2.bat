@@ -1,2 +1,2 @@
 @echo off
-C:\msys64\msys2_shell.cmd -defterm -here -mingw64
+D:\Msys2\msys2_shell.cmd -defterm -here -mingw64
