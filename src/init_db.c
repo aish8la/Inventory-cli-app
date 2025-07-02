@@ -20,10 +20,22 @@ int flag_value_callback(void *data, int argc, char **argv, char **arg_col_name) 
 int check_init_flag(void) {
     sqlite3 *db;
     int flag_value = 0;
-    char *get_init_flag = "SELECT flag_value FROM flags WHERE flag_name = 'not_initial_run';";
+    char *set_init_flag = "CREATE TABLE IF NOT EXISTS flags ("
+                        "flag_name  TEXT UNIQUE,"
+                        "flag_value INT"
+                        ");"
+                        "INSERT OR IGNORE INTO flags (flag_name, flag_value) "
+                        "VALUES ('not_initial_run', 0);";
+
+    char *get_init_flag ="SELECT flag_value FROM flags WHERE flag_name = 'not_initial_run';";
 
     if(open_db(&db) != 0) {
         exit(1);
+    }
+
+    if(run_sql(db, set_init_flag) != 0) {
+        sqlite3_close(db);
+        return 1;
     }
 
     if(run_sql_with_cb(db, get_init_flag, flag_value_callback, &flag_value) != 0) {
@@ -50,11 +62,8 @@ const char *initial_queries[] = {
     "item_code TEXT UNIQUE NOT NULL,"
     "item_name TEXT);",
 
-    //2)This query creates flags table and insert flag value
-    "CREATE TABLE IF NOT EXISTS flags (flag_name TEXT UNIQUE, flag_value INT);",
-
-    //3)This query insert flag value
-    "INSERT INTO flags (flag_name, flag_value) VALUES ('not_initial_run', 1);",
+    //3)This query updates flag value
+    "UPDATE flags SET flag_value = 1 WHERE flag_name = 'not_initial_run';",
 
     //4)These queries insert items
     "INSERT INTO items (item_code, item_name) VALUES "

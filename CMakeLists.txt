@@ -30,4 +30,4 @@ set(ALL_SOURCES
 )
 
 # Create executable
-add_executable(program.exe ${ALL_SOURCES})
+add_executable(program ${ALL_SOURCES})
