@@ -30,9 +30,7 @@ void add_item(void) {
         return;
     }
 
-    char add_item = 'y';
-
-    while(tolower(add_item) == 'y') {
+    while(1) {
 
     clear_console();
 
@@ -69,9 +67,14 @@ void add_item(void) {
 
     sqlite3_reset(stmt);
 
-    printf("Added Item, would you like to add another item ? (Y)es / (N)o => ");
-    scanf("%c", &add_item);
-    clear_input_buffer();
+    printf("\nAdded New Item [%s] Successfully.\n", item_code);
+
+    const char *add_another_msg = "\nWould you like to add another item ?";
+    const char *cancel_msg = "\nDone Adding Items.";
+
+    if(get_user_confirmation(add_another_msg, cancel_msg) != 0) {
+        break;
+    }
 
     }
 
@@ -286,7 +289,7 @@ void delete_item(void) {
         return;
     }
 
-    printf("\nItem Details\n");
+    printf("\nItem Selected for Delete Operation\n\n");
     printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
     printf("===================================\n");
     const unsigned char *item_name = sqlite3_column_text(stmt, 1);
@@ -296,16 +299,11 @@ void delete_item(void) {
  
     sqlite3_finalize(stmt);
 
-    printf("Confirm Delete Action [Y]es / [N]o => ");
+    char *prompt = "\nConfirm Delete Operation ?\n";
+    char *cancel_msg = "\nCancelled Delete Operation.\n";
 
-    char delete_confirm = 'N';
-
-    scanf("%c", &delete_confirm);
-    clear_input_buffer();
-
-    if(tolower(delete_confirm) != 'y') {
+    if(get_user_confirmation(prompt, cancel_msg) != 0) {
         sqlite3_close(db);
-        printf("Canceled Delete");
         wait_for_enter();
         return;
     }
@@ -324,7 +322,7 @@ void delete_item(void) {
         return;
     }
 
-    printf("Record Deleted Successfully");
+    printf("Item [%s] Deleted Successfully", item_code);
 
     sqlite3_finalize(stmt);
 
