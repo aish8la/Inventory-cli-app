@@ -216,7 +216,7 @@ void edit_item(void) {
  
     sqlite3_finalize(stmt);
 
-    printf("\nUpdated Item Details\n\n");
+    printf("\nEnter Updated Item Details;\n\n");
 
     printf("Enter Updated Item Code: ");
     read_input(new_itm_code, sizeof(new_itm_code));
@@ -292,7 +292,7 @@ void delete_item(void) {
     printf("\nItem Selected for Delete Operation\n\n");
     printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
     printf("===================================\n");
-    
+
     const char *item_name = (const char *)sqlite3_column_text(stmt, 1);
     const char *item_code = (const char *)sqlite3_column_text(stmt, 0);
 
