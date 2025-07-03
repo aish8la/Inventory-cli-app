@@ -104,8 +104,8 @@ void view_items(void) {
     printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
     printf("===================================\n");
     while (sqlite3_step(stmt) == SQLITE_ROW) {
-        const unsigned char *item_name = sqlite3_column_text(stmt, 1);
-        const unsigned char *item_code = sqlite3_column_text(stmt, 0);
+        const char *item_name = (const char *)sqlite3_column_text(stmt, 1);
+        const char *item_code = (const char *)sqlite3_column_text(stmt, 0);
 
         printf("%-12.10s%-22.20s\n", item_code, item_name);
 
@@ -209,8 +209,8 @@ void edit_item(void) {
     printf("\nOld Item Details\n");
     printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
     printf("===================================\n");
-    const unsigned char *item_name = sqlite3_column_text(stmt, 1);
-    const unsigned char *item_code = sqlite3_column_text(stmt, 0);
+    const char *item_name = (const char *)sqlite3_column_text(stmt, 1);
+    const char *item_code = (const char *)sqlite3_column_text(stmt, 0);
 
     printf("%-12.10s%-22.20s\n", item_code, item_name);
  
@@ -292,8 +292,9 @@ void delete_item(void) {
     printf("\nItem Selected for Delete Operation\n\n");
     printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
     printf("===================================\n");
-    const unsigned char *item_name = sqlite3_column_text(stmt, 1);
-    const unsigned char *item_code = sqlite3_column_text(stmt, 0);
+    
+    const char *item_name = (const char *)sqlite3_column_text(stmt, 1);
+    const char *item_code = (const char *)sqlite3_column_text(stmt, 0);
 
     printf("%-12.10s%-22.20s\n", item_code, item_name);
  
