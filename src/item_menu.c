@@ -205,7 +205,7 @@ void edit_item(void) {
         wait_for_enter();
         return;
     }
-
+    //TODO: Create a helper to select item and show the selected items
     printf("\nOld Item Details\n");
     printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
     printf("===================================\n");
