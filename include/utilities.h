@@ -9,4 +9,6 @@ void wait_for_enter(void);
 
 void clear_input_buffer(void);
 
+int get_user_confirmation(const char *prompt_msg, const char *cancel_msg);
+
 #endif
