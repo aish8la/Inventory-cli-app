@@ -5,6 +5,7 @@
 #include "sqlite_helpers.h"
 #include <stdlib.h>
 #include <ctype.h>
+#include "query_handlers.h"
 
 const int itm_cd_ln = 8; 
 const int itm_nm_ln = 30;
@@ -101,15 +102,8 @@ void view_items(void) {
         return;
     }
 
-    printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
-    printf("===================================\n");
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-        const char *item_name = (const char *)sqlite3_column_text(stmt, 1);
-        const char *item_code = (const char *)sqlite3_column_text(stmt, 0);
+    display_table(db, stmt, print_item_header, print_item_row);
 
-        printf("%-12.10s%-22.20s\n", item_code, item_name);
-
-    }
     sqlite3_finalize(stmt);
     sqlite3_close(db);
 
@@ -146,23 +140,7 @@ void search_item(void) {
 
     sqlite3_bind_text(stmt, 1, bind_param, -1, SQLITE_TRANSIENT);
 
-    int rc, found = 0;
-
-    printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
-    printf("===================================\n");
-
-    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-        found = 1;
-        printf("%-12.10s%-22.20s\n",
-            sqlite3_column_text(stmt, 0),
-            sqlite3_column_text(stmt, 1));
-    }
-
-    if (!found) {
-        printf("No matching records found.\n");
-    } else if (rc != SQLITE_DONE) {
-        fprintf(stderr, "SQLite error: %s\n", sqlite3_errmsg(db));
-    }
+    display_table(db, stmt, print_item_header, print_item_row);
  
     sqlite3_finalize(stmt);
     sqlite3_close(db);
@@ -198,21 +176,16 @@ void edit_item(void) {
 
     sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
 
+    //TODO: Create a helper to select item and show the selected items
+    printf("\nOld Item Details\n");
 
-    if(step_and_check(db, stmt, 1) != 0) {
+    int found = display_table(db, stmt, print_item_header, print_item_row);
+    if(found != 0) {
         sqlite3_finalize(stmt);
         sqlite3_close(db);
         wait_for_enter();
         return;
     }
-    //TODO: Create a helper to select item and show the selected items
-    printf("\nOld Item Details\n");
-    printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
-    printf("===================================\n");
-    const char *item_name = (const char *)sqlite3_column_text(stmt, 1);
-    const char *item_code = (const char *)sqlite3_column_text(stmt, 0);
-
-    printf("%-12.10s%-22.20s\n", item_code, item_name);
  
     sqlite3_finalize(stmt);
 
@@ -281,23 +254,16 @@ void delete_item(void) {
 
     sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
 
-
-    if(step_and_check(db, stmt, 1) != 0) {
+    printf("\nItem Selected for Delete Operation\n\n");
+    
+    int found = display_table(db, stmt, print_item_header, print_item_row);
+    if(found != 0) {
         sqlite3_finalize(stmt);
         sqlite3_close(db);
         wait_for_enter();
         return;
     }
 
-    printf("\nItem Selected for Delete Operation\n\n");
-    printf("\n%-12.10s%-22.20s\n", "Item Code", "Item Name");
-    printf("===================================\n");
-
-    const char *item_name = (const char *)sqlite3_column_text(stmt, 1);
-    const char *item_code = (const char *)sqlite3_column_text(stmt, 0);
-
-    printf("%-12.10s%-22.20s\n", item_code, item_name);
- 
     sqlite3_finalize(stmt);
 
     char *prompt = "\nConfirm Delete Operation ?\n";
@@ -323,7 +289,7 @@ void delete_item(void) {
         return;
     }
 
-    printf("Item [%s] Deleted Successfully", item_code);
+    printf("Item [%s] Deleted Successfully", input);
 
     sqlite3_finalize(stmt);
 
