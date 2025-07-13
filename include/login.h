@@ -1,6 +1,7 @@
 #ifndef LOGIN_H
 #define LOGIN_H
 
+//TODO: Move these into c file as most are not global
 enum Login_Constraints {
     MAX_USER_NAME_LENGTH = 15,
     MAX_USER_PASSWORD_LENGTH = 15,
