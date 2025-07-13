@@ -15,7 +15,7 @@ void print_item_row(sqlite3_stmt *stmt) {
 }
 
 //Function to display table
-void display_table(sqlite3 *db, sqlite3_stmt *stmt, void (*display_header)(void), void (*display_row)(sqlite3_stmt *stmt)) {
+int display_table(sqlite3 *db, sqlite3_stmt *stmt, void (*display_header)(void), void (*display_row)(sqlite3_stmt *stmt)) {
     int rc, found = 0;
 
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
@@ -29,7 +29,11 @@ void display_table(sqlite3 *db, sqlite3_stmt *stmt, void (*display_header)(void)
 
     if (!found) {
         printf("No matching records found.\n");
+        return 1;
     } else if (rc != SQLITE_DONE) {
         fprintf(stderr, "SQLite error: %s\n", sqlite3_errmsg(db));
+        return 1;
     }
+
+    return 0;
 }
