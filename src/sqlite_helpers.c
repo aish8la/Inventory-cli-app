@@ -94,4 +94,27 @@ int step_and_check(sqlite3 *db, sqlite3_stmt *stmt, int expect_row) {
     return 0;
 }
 
-    
+int begin_txn(sqlite3 *db) {
+    if(run_sql(db, "BEGIN TRANSACTION;") != 0) {
+        sqlite3_close(db);
+        return 1;
+    }
+    return 0;
+}
+
+int rollback_txn(sqlite3 *db) {
+        if(run_sql(db, "ROLLBACK;") != 0) {
+        sqlite3_close(db);
+        return 1;
+    }
+    return 0;
+}
+
+int commit_txn(sqlite3 *db) {
+    if(run_sql(db, "COMMIT;") != 0) {
+        rollback_txn(db);
+        sqlite3_close(db);
+        return 1;
+    }
+    return 0;
+}

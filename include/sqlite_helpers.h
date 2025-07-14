@@ -18,4 +18,8 @@ int prepare_stmt(sqlite3 *db, char *sql, sqlite3_stmt **stmt);
 
 int step_and_check(sqlite3 *db, sqlite3_stmt *stmt, int expect_row);
 
+int begin_txn(sqlite3 *db);
+int rollback_txn(sqlite3 *db);
+int commit_txn(sqlite3 *db);
+
 #endif
