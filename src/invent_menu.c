@@ -49,7 +49,7 @@ void add_stock(void) {
         goto error_cleanup;
     }
 
-    //BUG: fix this issue where display table above steps and completes the stmt 
+    //TODO: fix this issue where display table above steps and completes the stmt 
     //for now i am resetting the statement
     sqlite3_reset(stmt);
     sqlite3_step(stmt);
@@ -117,7 +117,7 @@ void add_stock(void) {
     sqlite3_finalize(update_stmt);
     sqlite3_finalize(add_stmt);
     sqlite3_close(db);
-    wait_for_enter();
+    wait_for_enter(); //BUG: This function does not wait until enter
 
     txn_error:
         rollback_txn(db);
