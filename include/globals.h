@@ -31,5 +31,14 @@ typedef struct {
     int user_count;
 } User_Array;
 
+/*This is a type def of a Menu item structure which will hold the pointer to the menu item function
+and the label of the menu item
+this allows for dynamic menu generation*/
+typedef struct {
+    const char* label;
+    void (*action)(void);
+    int req_access_lvl; // check login.h for more
+} Menu_Item;
+
 
 #endif

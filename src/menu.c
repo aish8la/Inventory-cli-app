@@ -8,17 +8,7 @@
 #include "item_menu.h"
 #include "invent_menu.h"
 
-/*This is a type def of a Menu item structure which will hold the pointer to the menu item function
-and the label of the menu item
-this allows for dynamic menu generation*/
 
-typedef struct {
-    const char* label;
-    void (*action)(void);
-    int req_access_lvl; // check login.h for more
-} Menu_Item;
-
-extern User current_user;
 
 /*These are prototypes of the main menu items. function definitions are below*/
 void invent_menu(void);
@@ -30,7 +20,8 @@ void setting_menu(void);
 //It accepts the original menu list, the count for the list and a pointer to the returned list count variable
 //this will use a dynamically allocated memory so free the memory with free() after the finishing
 Menu_Item *filter_menu(Menu_Item *menu_list, int count, int *ret_arr_count) {
-    int user_access_lvl = current_user.access_level;
+    const User *current_user = get_current_user();
+    int user_access_lvl = current_user->access_level;
     Menu_Item *new_list;
     *ret_arr_count = 0;
 

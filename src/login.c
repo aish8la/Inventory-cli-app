@@ -25,7 +25,7 @@ User_Array user_data = {
     3
 };
 
-User current_user;
+static User current_user;
 
 int login(void) {
 
@@ -70,4 +70,8 @@ int login(void) {
 
     return 0;
     
+}
+
+const User *get_current_user(void) {
+    return &current_user;
 }
