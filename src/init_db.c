@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "sqlite3.h"
 #include "sqlite_helpers.h"
+#include "utilities.h"
 
 static sqlite3 *db_instance = NULL; 
 
