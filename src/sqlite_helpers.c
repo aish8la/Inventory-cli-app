@@ -65,7 +65,6 @@ int prepare_stmt(sqlite3 *db, char *sql, sqlite3_stmt **stmt) {
     
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
         wait_for_enter();
         return 1;
     }
