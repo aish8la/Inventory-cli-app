@@ -30,8 +30,7 @@ void add_stock(void) {
                         "WHERE id = ?;";
 
     if(open_db(&db) != 0) {
-        goto error_cleanup;
-        // exit(1);
+        exit(1);
     }
 
     printf("Enter Item Code of Item: ");
@@ -108,8 +107,6 @@ void add_stock(void) {
     }
  
     goto success;
-    //TODO: Refactor with goto statement for cleanup
-
 
     success:
         printf("\nStock Added Successfully");

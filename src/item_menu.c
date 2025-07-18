@@ -11,31 +11,32 @@
 
 void add_item(void) {
 
-    sqlite3 *db;
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
 
-    if(open_db(&db) != 0) {
-        exit(1);
-    }
-
-    sqlite3_stmt *stmt;//an object that will store the sql statement in byte code and be used to run the other functions on
+    char item_code[ITEM_CODE_LENGTH];
+    char item_name[ITEM_NAME_LENGTH];
 
     //The ? are binding parameters to whom, values will be bound to using sqlite3_bind* functions
     char *sql = "INSERT INTO items (item_code, item_name) "
                 "VALUES (?, ?);";
 
+
+    if(open_db(&db) != 0) {
+        exit(1);
+    }
+
+
     /*Prepare statement is where the sql statement is translated into byte code for the statement to be run 
     (this is wrapper function that will run the sqlite3_prepare_v2 and also handle errors)*/
     if(prepare_stmt(db, sql, &stmt) == 1) {
-        sqlite3_close(db);
-        return;
+        goto cleanup;
     }
 
     while(1) {
 
     clear_console();
 
-    char item_code[ITEM_CODE_LENGTH];
-    char item_name[ITEM_NAME_LENGTH];
 
     printf("Enter Item Code (Must be Unique): ");
     read_input(item_code, sizeof(item_code));
@@ -45,9 +46,7 @@ void add_item(void) {
 
     if(item_code[0] == '\0' || item_name[0] == '\0') {
         printf("Value Cannot be Blank");
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
+        goto cleanup;
     }
 
     //This is where the values from the variables are bound to the sql statement bind parameters as mentioned above
@@ -59,10 +58,7 @@ void add_item(void) {
         if (sqlite3_errcode(db) == SQLITE_CONSTRAINT) {
             printf("Item code already exists. Please use a unique code.\n");
         }
-        sqlite3_finalize(stmt);
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
+        goto cleanup;
     }
 
     sqlite3_reset(stmt);
@@ -78,97 +74,101 @@ void add_item(void) {
 
     }
 
-    sqlite3_finalize(stmt);
-    sqlite3_close(db);
-    
-    wait_for_enter();
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        wait_for_enter();
 }
 
 void view_items(void) {
 
-    sqlite3 *db;
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+
+    char *sql = "SELECT item_code, item_name "
+                "FROM items;";
 
     if(open_db(&db) != 0) {
         exit(1);
     }
 
-    sqlite3_stmt *stmt;
-    char *sql = "SELECT item_code, item_name "
-                "FROM items;";
 
     if(prepare_stmt(db, sql, &stmt) == 1) {
-        sqlite3_close(db);
-        return;
+        goto cleanup;
     }
 
     display_table(db, stmt, print_item_header, print_item_row);
 
-    sqlite3_finalize(stmt);
-    sqlite3_close(db);
+    goto cleanup;
 
-    wait_for_enter();
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        wait_for_enter();
 }
 
 void search_item(void) {
 
-    sqlite3 *db;
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+
+    char *sql = "SELECT item_code, item_name "
+                "FROM items "
+                "WHERE item_code LIKE ?;";
+
+
+    char input[ITEM_CODE_LENGTH];
+    char bind_param[ITEM_CODE_LENGTH + 10];
 
     if(open_db(&db) != 0) {
         exit(1);
     }
 
-    sqlite3_stmt *stmt;
-    char *sql = "SELECT item_code, item_name "
-                "FROM items "
-                "WHERE item_code LIKE ?;";
 
     if(prepare_stmt(db, sql, &stmt) == 1) {
-        sqlite3_close(db);
-        return;
+        goto cleanup;
     }
-
-    char input[ITEM_CODE_LENGTH];
-    
 
     printf("Enter Item Code: ");
     read_input(input, sizeof(input));
-
-    char bind_param[ITEM_CODE_LENGTH + 10];
 
     snprintf(bind_param, sizeof(bind_param), "%%%s%%", input); // This adds % to the start and end of input so fuzzy search is possible with LIKE clause
 
     sqlite3_bind_text(stmt, 1, bind_param, -1, SQLITE_TRANSIENT);
 
     display_table(db, stmt, print_item_header, print_item_row);
- 
-    sqlite3_finalize(stmt);
-    sqlite3_close(db);
-    wait_for_enter();
+
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        wait_for_enter();
 }
 
 void edit_item(void) {
-    sqlite3 *db;
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
 
-    if(open_db(&db) != 0) {
-        exit(1);
-    }
-
-    sqlite3_stmt *stmt;
     char *select_sql = "SELECT item_code, item_name "
                 "FROM items "
                 "WHERE item_code = ?;";
     char *edit_sql = "UPDATE items SET item_code = ?, item_name = ? "
                 "WHERE item_code = ?;";
 
-    if(prepare_stmt(db, select_sql, &stmt) == 1) {
-        sqlite3_close(db);
-        return;
-    }
-
     char input[ITEM_CODE_LENGTH];
     char new_itm_code[ITEM_CODE_LENGTH];
     char new_itm_name[ITEM_NAME_LENGTH];
-    
+
+    if(open_db(&db) != 0) {
+        exit(1);
+    }
+
+    if(prepare_stmt(db, select_sql, &stmt) == 1) {
+        goto cleanup;
+    }
 
     printf("Enter Item Code of Item to edit: ");
     read_input(input, sizeof(input));
@@ -180,13 +180,11 @@ void edit_item(void) {
 
     int found = display_table(db, stmt, print_item_header, print_item_row);
     if(found != 0) {
-        sqlite3_finalize(stmt);
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
+        goto cleanup;
     }
  
     sqlite3_finalize(stmt);
+    stmt = NULL;
 
     printf("\nEnter Updated Item Details;\n\n");
 
@@ -198,14 +196,11 @@ void edit_item(void) {
 
     if(new_itm_code[0] == '\0' || new_itm_name[0] == '\0') {
         printf("Value Cannot be Blank");
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
+        goto cleanup;
     }
 
     if(prepare_stmt(db, edit_sql, &stmt) == 1) {
-        sqlite3_close(db);
-        return;
+        goto cleanup;
     }
 
     sqlite3_bind_text(stmt, 1, new_itm_code, -1, SQLITE_TRANSIENT);
@@ -213,37 +208,35 @@ void edit_item(void) {
     sqlite3_bind_text(stmt, 3, input, -1, SQLITE_TRANSIENT);
 
     if (step_and_check(db, stmt, 0) != 0) {
-        sqlite3_finalize(stmt);
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
+        goto cleanup;
     }
 
     printf("Record Updated Successfully");
 
-    sqlite3_finalize(stmt);
+    goto cleanup;
 
-    sqlite3_close(db);
-    wait_for_enter();
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        wait_for_enter();
 }
 
 void delete_item(void) {
-    sqlite3 *db;
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
 
-    if(open_db(&db) != 0) {
-        exit(1);
-    }
-
-    sqlite3_stmt *stmt;
     char *select_sql = "SELECT item_code, item_name "
                 "FROM items "
                 "WHERE item_code = ?;";
     char *delete_sql = "DELETE FROM items "
                 "WHERE item_code = ?;";
 
+    if(open_db(&db) != 0) {
+        exit(1);
+    }
+
     if(prepare_stmt(db, select_sql, &stmt) == 1) {
-        sqlite3_close(db);
-        return;
+        goto cleanup;
     }
 
     char input[ITEM_CODE_LENGTH];
@@ -257,41 +250,35 @@ void delete_item(void) {
     
     int found = display_table(db, stmt, print_item_header, print_item_row);
     if(found != 0) {
-        sqlite3_finalize(stmt);
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
+        goto cleanup;
     }
 
     sqlite3_finalize(stmt);
+    stmt = NULL;
 
     char *prompt = "\nConfirm Delete Operation ?\n";
     char *cancel_msg = "\nCancelled Delete Operation.\n";
 
     if(get_user_confirmation(prompt, cancel_msg) != 0) {
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
+        goto cleanup;
     }
 
     if(prepare_stmt(db, delete_sql, &stmt) == 1) {
-        sqlite3_close(db);
-        return;
+        goto cleanup;
     }
 
     sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
 
     if (step_and_check(db, stmt, 0) != 0) {
-        sqlite3_finalize(stmt);
-        sqlite3_close(db);
-        wait_for_enter();
-        return;
+        goto cleanup;
     }
 
     printf("Item [%s] Deleted Successfully", input);
 
-    sqlite3_finalize(stmt);
+    goto cleanup;
 
-    sqlite3_close(db);
-    wait_for_enter();
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (db) sqlite3_close(db);
+        wait_for_enter();
 }
