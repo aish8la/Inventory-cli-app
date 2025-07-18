@@ -3,21 +3,6 @@
 #include <stdio.h>
 #include "utilities.h"
 
-int open_db(sqlite3 **ppDb) {
-    int rc;
-
-    rc = sqlite3_open("data.db", ppDb);
-
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Database could not be opened: %s\n", sqlite3_errmsg(*ppDb));
-        sqlite3_close(*ppDb);
-        wait_for_enter();
-        return 1;
-    }
-
-    return 0;
-}
-
 int run_sql(sqlite3 *db, const char *sql) {
     int rc;
     char *err_msg = NULL;

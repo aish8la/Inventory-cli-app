@@ -4,7 +4,6 @@
 #include "sqlite3.h"
 
 
-int open_db(sqlite3 **ppDb);
 int run_sql(sqlite3 *db, const char *sql);
 
 int run_sql_with_cb(
