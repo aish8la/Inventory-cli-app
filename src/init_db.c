@@ -4,6 +4,38 @@
 #include "sqlite3.h"
 #include "sqlite_helpers.h"
 
+static sqlite3 *db_instance = NULL; 
+
+int connect_db(const char *db_name) {
+
+    if(db_instance != NULL) {
+        return 0;
+    }
+
+    int rc = sqlite3_open(db_name, &db_instance);
+
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Database could not be opened: %s\n", sqlite3_errmsg(db_instance));
+        db_instance = NULL;
+        wait_for_enter();
+        return 1;
+    }
+
+    return 0;
+}
+
+
+sqlite3 *get_db(void) {
+    return db_instance;
+}
+
+void disconnect_db(void) {
+    if (db_instance != NULL) {
+        sqlite3_close(db_instance);
+        db_instance = NULL;
+    }
+}
+
 //This is a callback for sqlite_exec to check 1 flag value from the database and write it to the var address give to the sqlite_exec function
 int flag_value_callback(void *data, int argc, char **argv, char **arg_col_name) {
     int *flag_var = (int *)data; //typecasting the generic pointer into a integer pointer
@@ -30,7 +62,7 @@ int check_init_flag(void) {
     char *get_init_flag ="SELECT flag_value FROM flags WHERE flag_name = 'not_initial_run';";
 
     if(open_db(&db) != 0) {
-        exit(1);
+        return 1;
     }
 
     if(run_sql(db, set_init_flag) != 0) {
@@ -101,7 +133,7 @@ int initialize_db(void) {
     sqlite3 *db;
 
     if(open_db(&db) != 0) {
-        exit(1);
+        return 1;
     }
 
     int query_count = sizeof(initial_queries) / sizeof(initial_queries[0]);
