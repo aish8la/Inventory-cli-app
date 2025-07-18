@@ -22,6 +22,17 @@ int connect_db(const char *db_name) {
         return 1;
     }
 
+
+    rc = sqlite3_exec(db_instance, "PRAGMA foreign_keys = ON", 0, 0, NULL);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Foreign Key could not be enabled: %s\n", sqlite3_errmsg(db_instance));
+        db_instance = NULL;
+        wait_for_enter();
+        return 1;
+    }
+
+
+
     return 0;
 }
 
