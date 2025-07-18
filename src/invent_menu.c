@@ -46,8 +46,8 @@ int add_stock(void) {
         goto error_cleanup;
     }
 
-    //TODO: fix this issue where display table above steps and completes the stmt 
-    //for now i am resetting the statement
+    //TODO: May implement a function to display and also fetch the item id
+    //Here i reset the above stmt since display steps through it till it is done
     sqlite3_reset(stmt);
     sqlite3_step(stmt);
     item_id = sqlite3_column_int(stmt, 2);
