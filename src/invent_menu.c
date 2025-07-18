@@ -84,7 +84,7 @@ void add_stock(void) {
 
     sqlite3_bind_int(add_stmt, 1, qty);
     sqlite3_bind_double(add_stmt, 2, unit_cost);
-    sqlite3_bind_double(add_stmt, 3, unit_cost);
+    sqlite3_bind_double(add_stmt, 3, qty);
     sqlite3_bind_int(add_stmt, 4, item_id);
 
     if (step_and_check(db, add_stmt, 0) != 0) {
