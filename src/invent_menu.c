@@ -1,7 +1,7 @@
 #include "invent_menu.h"
 #include "utilities.h"
 #include "sqlite3.h"
-#include "item_menu.h"
+#include "globals.h"
 #include "query_handlers.h"
 #include "sqlite_helpers.h"
 #include <stdio.h>
@@ -13,7 +13,7 @@ void add_stock(void) {
     sqlite3_stmt *add_stmt;
     sqlite3_stmt *update_stmt;
 
-    char input[itm_cd_ln];
+    char input[ITEM_CODE_LENGTH];
     int qty;
     double unit_cost;
     int item_id;

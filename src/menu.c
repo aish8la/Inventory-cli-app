@@ -3,7 +3,8 @@
 #include "utilities.h"
 #include "string.h"
 #include <stdlib.h>
-#include <login.h>
+#include "login.h"
+#include "globals.h"
 #include "item_menu.h"
 #include "invent_menu.h"
 
@@ -17,7 +18,6 @@ typedef struct {
     int req_access_lvl; // check login.h for more
 } Menu_Item;
 
-//TODO:move this to a session source and header file. currently need to include login.h to access this
 extern User current_user;
 
 /*These are prototypes of the main menu items. function definitions are below*/

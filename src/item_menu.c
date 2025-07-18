@@ -6,9 +6,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "query_handlers.h"
+#include "globals.h"
 
-const int itm_cd_ln = 8; 
-const int itm_nm_ln = 30;
 
 void add_item(void) {
 
@@ -35,8 +34,8 @@ void add_item(void) {
 
     clear_console();
 
-    char item_code[itm_cd_ln];
-    char item_name[itm_nm_ln];
+    char item_code[ITEM_CODE_LENGTH];
+    char item_name[ITEM_NAME_LENGTH];
 
     printf("Enter Item Code (Must be Unique): ");
     read_input(item_code, sizeof(item_code));
@@ -128,13 +127,13 @@ void search_item(void) {
         return;
     }
 
-    char input[itm_cd_ln];
+    char input[ITEM_CODE_LENGTH];
     
 
     printf("Enter Item Code: ");
     read_input(input, sizeof(input));
 
-    char bind_param[itm_cd_ln + 10];
+    char bind_param[ITEM_CODE_LENGTH + 10];
 
     snprintf(bind_param, sizeof(bind_param), "%%%s%%", input); // This adds % to the start and end of input so fuzzy search is possible with LIKE clause
 
@@ -166,9 +165,9 @@ void edit_item(void) {
         return;
     }
 
-    char input[itm_cd_ln];
-    char new_itm_code[itm_cd_ln];
-    char new_itm_name[itm_nm_ln];
+    char input[ITEM_CODE_LENGTH];
+    char new_itm_code[ITEM_CODE_LENGTH];
+    char new_itm_name[ITEM_NAME_LENGTH];
     
 
     printf("Enter Item Code of Item to edit: ");
@@ -247,7 +246,7 @@ void delete_item(void) {
         return;
     }
 
-    char input[itm_cd_ln];
+    char input[ITEM_CODE_LENGTH];
 
     printf("Enter Item Code of Item to Delete: ");
     read_input(input, sizeof(input));

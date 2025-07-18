@@ -2,6 +2,7 @@
 #include <string.h>
 #include "login.h"
 #include "utilities.h"
+#include "globals.h"
 
 User_Array user_data = {
     {

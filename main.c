@@ -4,6 +4,7 @@
 #include "utilities.h"
 #include "menu.h"
 #include "init_db.h"
+#include "globals.h"
 
 int main(void) {
 

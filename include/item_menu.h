@@ -7,8 +7,4 @@ void search_item(void);
 void edit_item(void);
 void delete_item(void);
 
-//TODO: Maybe make a header to store these kinds of data ?
-extern const int itm_cd_ln;
-extern const int itm_nm_ln;
-
 #endif
