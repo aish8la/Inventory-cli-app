@@ -7,11 +7,12 @@
 #include <ctype.h>
 #include "display_table.h"
 #include "globals.h"
+#include "init_db.h"
 
 
 int add_item(void) {
 
-    sqlite3 *db = NULL;
+    sqlite3 *db = get_db();
     sqlite3_stmt *stmt = NULL;
 
     char item_code[ITEM_CODE_LENGTH];
@@ -20,11 +21,6 @@ int add_item(void) {
     //The ? are binding parameters to whom, values will be bound to using sqlite3_bind* functions
     char *sql = "INSERT INTO items (item_code, item_name) "
                 "VALUES (?, ?);";
-
-
-    if(open_db(&db) != 0) {
-        return 1;
-    }
 
 
     /*Prepare statement is where the sql statement is translated into byte code for the statement to be run 
@@ -78,23 +74,17 @@ int add_item(void) {
 
     cleanup:
         if (stmt) sqlite3_finalize(stmt);
-        if (db) sqlite3_close(db);
         wait_for_enter();
         return 0;
 }
 
 int view_items(void) {
 
-    sqlite3 *db = NULL;
+    sqlite3 *db = get_db();
     sqlite3_stmt *stmt = NULL;
 
     char *sql = "SELECT item_code, item_name "
                 "FROM items;";
-
-    if(open_db(&db) != 0) {
-        return 1;
-    }
-
 
     if(prepare_stmt(db, sql, &stmt) == 1) {
         goto cleanup;
@@ -106,14 +96,13 @@ int view_items(void) {
 
     cleanup:
         if (stmt) sqlite3_finalize(stmt);
-        if (db) sqlite3_close(db);
         wait_for_enter();
         return 0;
 }
 
 int search_item(void) {
 
-    sqlite3 *db = NULL;
+    sqlite3 *db = get_db();
     sqlite3_stmt *stmt = NULL;
 
     char *sql = "SELECT item_code, item_name "
@@ -123,11 +112,6 @@ int search_item(void) {
 
     char input[ITEM_CODE_LENGTH];
     char bind_param[ITEM_CODE_LENGTH + 10];
-
-    if(open_db(&db) != 0) {
-        return 1;
-    }
-
 
     if(prepare_stmt(db, sql, &stmt) == 1) {
         goto cleanup;
@@ -146,13 +130,12 @@ int search_item(void) {
 
     cleanup:
         if (stmt) sqlite3_finalize(stmt);
-        if (db) sqlite3_close(db);
         wait_for_enter();
         return 0;
 }
 
 int edit_item(void) {
-    sqlite3 *db = NULL;
+    sqlite3 *db = get_db();
     sqlite3_stmt *stmt = NULL;
 
     char *select_sql = "SELECT item_code, item_name "
@@ -164,10 +147,6 @@ int edit_item(void) {
     char input[ITEM_CODE_LENGTH];
     char new_itm_code[ITEM_CODE_LENGTH];
     char new_itm_name[ITEM_NAME_LENGTH];
-
-    if(open_db(&db) != 0) {
-        return 1;
-    }
 
     if(prepare_stmt(db, select_sql, &stmt) == 1) {
         goto cleanup;
@@ -220,13 +199,12 @@ int edit_item(void) {
 
     cleanup:
         if (stmt) sqlite3_finalize(stmt);
-        if (db) sqlite3_close(db);
         wait_for_enter();
         return 0;
 }
 
 int delete_item(void) {
-    sqlite3 *db = NULL;
+    sqlite3 *db = get_db();
     sqlite3_stmt *stmt = NULL;
 
     char *select_sql = "SELECT item_code, item_name "
@@ -234,10 +212,6 @@ int delete_item(void) {
                 "WHERE item_code = ?;";
     char *delete_sql = "DELETE FROM items "
                 "WHERE item_code = ?;";
-
-    if(open_db(&db) != 0) {
-        return 1;
-    }
 
     if(prepare_stmt(db, select_sql, &stmt) == 1) {
         goto cleanup;
@@ -283,7 +257,6 @@ int delete_item(void) {
 
     cleanup:
         if (stmt) sqlite3_finalize(stmt);
-        if (db) sqlite3_close(db);
         wait_for_enter();
         return 0;
 }

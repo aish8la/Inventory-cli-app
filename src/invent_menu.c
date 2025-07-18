@@ -6,9 +6,10 @@
 #include "sqlite_helpers.h"
 #include <stdio.h>
 #include "stdlib.h"
+#include "init_db.h"
 
 int add_stock(void) {
-    sqlite3 *db = NULL;
+    sqlite3 *db = get_db();
     sqlite3_stmt *stmt = NULL;
     sqlite3_stmt *add_stmt = NULL;
     sqlite3_stmt *update_stmt = NULL;
@@ -28,10 +29,6 @@ int add_stock(void) {
                         "SET current_qty = current_qty + ?, "
                         "total_value = total_value + ? "
                         "WHERE id = ?;";
-
-    if(open_db(&db) != 0) {
-        return 1;
-    }
 
     printf("Enter Item Code of Item: ");
     read_input(input, sizeof(input));
@@ -124,7 +121,6 @@ int add_stock(void) {
         if (stmt) sqlite3_finalize(stmt);
         if (add_stmt) sqlite3_finalize(add_stmt);
         if (update_stmt) sqlite3_finalize(update_stmt);
-        if (db) sqlite3_close(db);
         wait_for_enter();
         return 0;
 }
