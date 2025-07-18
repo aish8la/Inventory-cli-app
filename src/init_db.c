@@ -105,13 +105,17 @@ const char *initial_queries[] = {
     "added_qty INTEGER CHECK(added_qty != 0),"
     "unit_cost REAL DEFAULT 0,"
     "unused_qty INTEGER,"
-    "item_id INTEGER NOT NULL);",
+    "item_id INTEGER NOT NULL, "
+    "FOREIGN KEY(item_id) REFERENCES items (id));",
 
     //3)This creates the item issue table
     "CREATE TABLE IF NOT EXISTS stock_issues ("
     "id INTEGER PRIMARY KEY AUTOINCREMENT,"
     "issued_qty INTEGER CHECK(issued_qty != 0),"
-    "stock_addition_id INTEGER NOT NULL);",
+    "item_id INTEGER NOT NULL, "
+    "stock_addition_id INTEGER NOT NULL, "
+    "FOREIGN KEY(item_id) REFERENCES items (id), "
+    "FOREIGN KEY(stock_addition_id) REFERENCES stock_additions (id));",
 
     //4)This query updates flag value
     "UPDATE flags SET flag_value = 1 WHERE flag_name = 'not_initial_run';",
