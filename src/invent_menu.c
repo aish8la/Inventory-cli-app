@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "stdlib.h"
 
-void add_stock(void) {
+int add_stock(void) {
     sqlite3 *db = NULL;
     sqlite3_stmt *stmt = NULL;
     sqlite3_stmt *add_stmt = NULL;
@@ -30,7 +30,7 @@ void add_stock(void) {
                         "WHERE id = ?;";
 
     if(open_db(&db) != 0) {
-        exit(1);
+        return 1;
     }
 
     printf("Enter Item Code of Item: ");
@@ -126,20 +126,25 @@ void add_stock(void) {
         if (update_stmt) sqlite3_finalize(update_stmt);
         if (db) sqlite3_close(db);
         wait_for_enter();
+        return 0;
 }
 
-void issue_stock(void) {
+int issue_stock(void) {
     wait_for_enter();
+    return 0;
 }
 
-void view_additions(void) {
+int view_additions(void) {
     wait_for_enter();
+    return 0;
 }
 
-void view_issues(void) {
+int view_issues(void) {
     wait_for_enter();
+    return 0;
 }
 
-void view_inventory(void) {
+int view_inventory(void) {
     wait_for_enter();
+    return 0;
 }

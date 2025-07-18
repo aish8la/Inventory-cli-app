@@ -1,10 +1,10 @@
 #ifndef INVENT_MENU_H
 #define INVENT_MENU_H
 
-void add_stock(void);
-void issue_stock(void);
-void view_additions(void);
-void view_issues(void);
-void view_inventory(void);
+int add_stock(void);
+int issue_stock(void);
+int view_additions(void);
+int view_issues(void);
+int view_inventory(void);
 
 #endif

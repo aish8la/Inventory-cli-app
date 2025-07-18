@@ -44,6 +44,10 @@ int main(void) {
         return 0;
     }
 
-    run_main_menu();
+    int err = run_main_menu();
+
+    if(err != 0) return 1;
+
+
     return 0;
 }

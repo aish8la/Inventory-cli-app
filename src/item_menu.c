@@ -9,7 +9,7 @@
 #include "globals.h"
 
 
-void add_item(void) {
+int add_item(void) {
 
     sqlite3 *db = NULL;
     sqlite3_stmt *stmt = NULL;
@@ -23,7 +23,7 @@ void add_item(void) {
 
 
     if(open_db(&db) != 0) {
-        exit(1);
+        return 1;
     }
 
 
@@ -80,9 +80,10 @@ void add_item(void) {
         if (stmt) sqlite3_finalize(stmt);
         if (db) sqlite3_close(db);
         wait_for_enter();
+        return 0;
 }
 
-void view_items(void) {
+int view_items(void) {
 
     sqlite3 *db = NULL;
     sqlite3_stmt *stmt = NULL;
@@ -91,7 +92,7 @@ void view_items(void) {
                 "FROM items;";
 
     if(open_db(&db) != 0) {
-        exit(1);
+        return 1;
     }
 
 
@@ -107,9 +108,10 @@ void view_items(void) {
         if (stmt) sqlite3_finalize(stmt);
         if (db) sqlite3_close(db);
         wait_for_enter();
+        return 0;
 }
 
-void search_item(void) {
+int search_item(void) {
 
     sqlite3 *db = NULL;
     sqlite3_stmt *stmt = NULL;
@@ -123,7 +125,7 @@ void search_item(void) {
     char bind_param[ITEM_CODE_LENGTH + 10];
 
     if(open_db(&db) != 0) {
-        exit(1);
+        return 1;
     }
 
 
@@ -146,9 +148,10 @@ void search_item(void) {
         if (stmt) sqlite3_finalize(stmt);
         if (db) sqlite3_close(db);
         wait_for_enter();
+        return 0;
 }
 
-void edit_item(void) {
+int edit_item(void) {
     sqlite3 *db = NULL;
     sqlite3_stmt *stmt = NULL;
 
@@ -163,7 +166,7 @@ void edit_item(void) {
     char new_itm_name[ITEM_NAME_LENGTH];
 
     if(open_db(&db) != 0) {
-        exit(1);
+        return 1;
     }
 
     if(prepare_stmt(db, select_sql, &stmt) == 1) {
@@ -219,9 +222,10 @@ void edit_item(void) {
         if (stmt) sqlite3_finalize(stmt);
         if (db) sqlite3_close(db);
         wait_for_enter();
+        return 0;
 }
 
-void delete_item(void) {
+int delete_item(void) {
     sqlite3 *db = NULL;
     sqlite3_stmt *stmt = NULL;
 
@@ -232,7 +236,7 @@ void delete_item(void) {
                 "WHERE item_code = ?;";
 
     if(open_db(&db) != 0) {
-        exit(1);
+        return 1;
     }
 
     if(prepare_stmt(db, select_sql, &stmt) == 1) {
@@ -281,4 +285,5 @@ void delete_item(void) {
         if (stmt) sqlite3_finalize(stmt);
         if (db) sqlite3_close(db);
         wait_for_enter();
+        return 0;
 }

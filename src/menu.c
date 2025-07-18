@@ -11,18 +11,17 @@
 
 
 /*These are prototypes of the main menu items. function definitions are below*/
-void invent_menu(void);
-void item_menu(void);
-void setting_menu(void);
+int invent_menu(void);
+int item_menu(void);
+int setting_menu(void);
 
 
 //This function will return a filtered list of menu items and is a helper for the run_menu function
 //It accepts the original menu list, the count for the list and a pointer to the returned list count variable
 //this will use a dynamically allocated memory so free the memory with free() after the finishing
-Menu_Item *filter_menu(Menu_Item *menu_list, int count, int *ret_arr_count) {
+int filter_menu(Menu_Item *menu_list, int count, int *ret_arr_count, Menu_Item **new_list) {
     const User *current_user = get_current_user();
     int user_access_lvl = current_user->access_level;
-    Menu_Item *new_list;
     *ret_arr_count = 0;
 
     for(int i = 0; i < count; i++) {
@@ -31,34 +30,38 @@ Menu_Item *filter_menu(Menu_Item *menu_list, int count, int *ret_arr_count) {
         }
     }
 
-    new_list = (Menu_Item *)malloc(*ret_arr_count * sizeof(Menu_Item));
+    *new_list = (Menu_Item *)malloc(*ret_arr_count * sizeof(Menu_Item));
 
-    if(new_list == NULL) {
+    if(*new_list == NULL) {
         printf("Failed to allocate memory for new list at menu.c");
-        exit(0);
+        return 1;
     }
 
     int j = 0; // index for the new list array
 
     for(int i = 0; i < count; i++) {
         if(menu_list[i].req_access_lvl <= user_access_lvl) {
-            new_list[j] = menu_list[i];
+            (*new_list)[j] = menu_list[i];
             j++;
         }
     }
 
-    return new_list;
+    return 0;
 
 }
 
 /*This is the menu runner function that will take the Menu_Item type array that
 contains a list of defined menu items and display them on the CLI*/
-void run_menu(const char* title, Menu_Item* items, int count) {
+int run_menu(const char* title, Menu_Item* items, int count) {
     int choice;
     int filtered_count;
-    Menu_Item *filtered_list;
+    Menu_Item *filtered_list = NULL;
 
-    filtered_list = filter_menu(items, count, &filtered_count);
+    int err = filter_menu(items, count, &filtered_count, &filtered_list);
+
+    if(err != 0) {
+        return 1;
+    }
 
     while (1) {
         clear_console();
@@ -78,23 +81,28 @@ void run_menu(const char* title, Menu_Item* items, int count) {
             break;
         }
 
-        if(choice < 1 || choice > count) {
+        if(choice < 1 || choice > filtered_count) {
 
             printf("\nInvalid Choice. Try again.");
             wait_for_enter();
             continue;
         }
 
-        filtered_list[choice -1].action();
+        int err = filtered_list[choice -1].action();
+
+        if(err != 0) {
+            if(filtered_list) free(filtered_list);
+            return 1;
+        }
 
     }
 
-    free(filtered_list);// this frees the filtered list memory
-    filtered_list = NULL;//null assigned to pointer to prevent issues with dangling pointer
+    if(filtered_list) free(filtered_list);// this frees the filtered list memory
+    return 0;
 }
 
 /*This is the run main menu function that will call the run_menu function with the main menu item list*/
-void run_main_menu(void) {
+int run_main_menu(void) {
 
     Menu_Item main_menu[] = {
         {"Inventory Transactions", invent_menu, 1},
@@ -106,10 +114,14 @@ void run_main_menu(void) {
 
     const char* title = "Main Menu";
 
-    run_menu(title, main_menu, menu_count);
+    int err = run_menu(title, main_menu, menu_count);
+
+    if(err != 0) return 1;
+
+    return 0;
 }
 
-void item_menu(void) {
+int item_menu(void) {
 
     Menu_Item item_menu[] = {
         {"Add Item", add_item, 2},
@@ -123,10 +135,14 @@ void item_menu(void) {
 
     const char* title = "Item Menu";
 
-    run_menu(title, item_menu, menu_count);
+    int err = run_menu(title, item_menu, menu_count);
+
+    if(err != 0) return 1;
+
+    return 0;
 }
 
-void invent_menu(void) {
+int invent_menu(void) {
 
     Menu_Item invent_menu[] = {
         {"Add Stock", add_stock, 2},
@@ -140,10 +156,17 @@ void invent_menu(void) {
 
     const char* title = "Inventory Menu";
 
-    run_menu(title, invent_menu, menu_count);
+    int err = run_menu(title, invent_menu, menu_count);
+
+    
+    if(err != 0) return 1;
+
+    return 0;
 }
 
-void setting_menu(void) {
+//TODO: Implement this
+int setting_menu(void) {
     printf("This is the setting menu");
     wait_for_enter();
+    return 0;
 }

@@ -36,7 +36,7 @@ and the label of the menu item
 this allows for dynamic menu generation*/
 typedef struct {
     const char* label;
-    void (*action)(void);
+    int (*action)(void);
     int req_access_lvl; // check login.h for more
 } Menu_Item;
 
