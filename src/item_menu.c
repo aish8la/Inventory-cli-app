@@ -51,7 +51,7 @@ int add_item(void) {
 
     //sqlite3_step is used to execute the insert using the prepared statement
     if(step_and_check(db, stmt, 0) != 0) {
-        if (sqlite3_errcode(db) == SQLITE_CONSTRAINT) {
+        if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_UNIQUE) {
             printf("Item code already exists. Please use a unique code.\n");
         }
         goto cleanup;
@@ -248,6 +248,9 @@ int delete_item(void) {
     sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
 
     if (step_and_check(db, stmt, 0) != 0) {
+        if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY) {
+            printf("Item has one or more related transactions. Delete those first.\n");
+        }
         goto cleanup;
     }
 
