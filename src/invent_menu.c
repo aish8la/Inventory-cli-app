@@ -2,7 +2,7 @@
 #include "utilities.h"
 #include "sqlite3.h"
 #include "globals.h"
-#include "query_handlers.h"
+#include "display_table.h"
 #include "sqlite_helpers.h"
 #include <stdio.h>
 #include "stdlib.h"

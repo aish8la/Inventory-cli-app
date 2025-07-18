@@ -1,5 +1,5 @@
-#ifndef QUERY_HANDLERS_H
-#define QUERY_HANDLERS_H
+#ifndef DISPLAY_TABLE_H
+#define DISPLAY_TABLE_H
 
 #include "sqlite3.h"
 

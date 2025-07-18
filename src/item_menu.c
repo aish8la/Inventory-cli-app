@@ -5,7 +5,7 @@
 #include "sqlite_helpers.h"
 #include <stdlib.h>
 #include <ctype.h>
-#include "query_handlers.h"
+#include "display_table.h"
 #include "globals.h"
 
 
