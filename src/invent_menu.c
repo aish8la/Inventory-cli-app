@@ -8,12 +8,12 @@
 #include "stdlib.h"
 
 void add_stock(void) {
-    sqlite3 *db;
-    sqlite3_stmt *stmt;
-    sqlite3_stmt *add_stmt;
-    sqlite3_stmt *update_stmt;
+    sqlite3 *db = NULL;
+    sqlite3_stmt *stmt = NULL;
+    sqlite3_stmt *add_stmt = NULL;
+    sqlite3_stmt *update_stmt = NULL;
 
-    char input[ITEM_CODE_LENGTH];
+    char input[ITEM_CODE_LENGTH + 1];
     int qty;
     double unit_cost;
     int item_id;
@@ -30,7 +30,8 @@ void add_stock(void) {
                         "WHERE id = ?;";
 
     if(open_db(&db) != 0) {
-        exit(1);
+        goto error_cleanup;
+        // exit(1);
     }
 
     printf("Enter Item Code of Item: ");
@@ -54,8 +55,6 @@ void add_stock(void) {
     sqlite3_reset(stmt);
     sqlite3_step(stmt);
     item_id = sqlite3_column_int(stmt, 2);
- 
-    sqlite3_finalize(stmt);
 
     printf("\nEnter the Stock Addition Details;\n\n");
 
@@ -93,7 +92,7 @@ void add_stock(void) {
 
 
     if(prepare_stmt(db, update_sql, &update_stmt) == 1) {
-        goto error_cleanup;
+        goto txn_error;
     }
 
     sqlite3_bind_int(update_stmt, 1, qty);
@@ -108,28 +107,28 @@ void add_stock(void) {
         goto txn_error;
     }
  
+    goto success;
     //TODO: Refactor with goto statement for cleanup
 
 
-    printf("\nStock Added Successfully");
+    success:
+        printf("\nStock Added Successfully");
+        goto cleanup;
 
-    sqlite3_finalize(stmt);
-    sqlite3_finalize(update_stmt);
-    sqlite3_finalize(add_stmt);
-    sqlite3_close(db);
-    wait_for_enter(); //BUG: This function does not wait until enter
+    error_cleanup:
+        printf("\nError Occurred");
+        goto cleanup;
 
     txn_error:
         rollback_txn(db);
         goto error_cleanup;
 
-    error_cleanup:
-        sqlite3_finalize(stmt);
-        sqlite3_finalize(update_stmt);
-        sqlite3_finalize(add_stmt);
-        sqlite3_close(db);
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (add_stmt) sqlite3_finalize(add_stmt);
+        if (update_stmt) sqlite3_finalize(update_stmt);
+        if (db) sqlite3_close(db);
         wait_for_enter();
-        return;
 }
 
 void issue_stock(void) {
