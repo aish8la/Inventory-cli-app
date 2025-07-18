@@ -50,7 +50,7 @@ int flag_value_callback(void *data, int argc, char **argv, char **arg_col_name) 
 
 //returns 0 if the current run is not the first time running (by checking the flags table). returns 1 in case of sqlite errors or first time running; 
 int check_init_flag(void) {
-    sqlite3 *db;
+    sqlite3 *db = get_db();
     int flag_value = 0;
     char *set_init_flag = "CREATE TABLE IF NOT EXISTS flags ("
                         "flag_name  TEXT UNIQUE,"
@@ -61,23 +61,14 @@ int check_init_flag(void) {
 
     char *get_init_flag ="SELECT flag_value FROM flags WHERE flag_name = 'not_initial_run';";
 
-    if(open_db(&db) != 0) {
-        return 1;
-    }
-
     if(run_sql(db, set_init_flag) != 0) {
-        sqlite3_close(db);
         return 1;
     }
 
     if(run_sql_with_cb(db, get_init_flag, flag_value_callback, &flag_value) != 0) {
-        sqlite3_close(db);
         return 1;
     }
   
-    sqlite3_close(db);
-    db = NULL;
-
     if(flag_value) {
         return 0;
     } else {
@@ -124,28 +115,25 @@ const char *initial_queries[] = {
 
 int initialize_db(void) {
 
+    if(connect_db("data.db") != 0) {
+        return 1;
+    }
+
+    sqlite3 *db = get_db();
+
     /*check init returns 0 if the current run is not the first time so this check will return without running
     database initialization*/
     if(!check_init_flag()) {
         return 0;
     }
 
-    sqlite3 *db;
-
-    if(open_db(&db) != 0) {
-        return 1;
-    }
-
     int query_count = sizeof(initial_queries) / sizeof(initial_queries[0]);
 
     for (int i = 0; i < query_count; i++) {
         if(run_sql(db, initial_queries[i]) != 0) {
-            sqlite3_close(db);
             return 1;
         }
     }
 
-    sqlite3_close(db);
-    db = NULL;
     return 0;
 }

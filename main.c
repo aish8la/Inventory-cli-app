@@ -12,7 +12,7 @@ int main(void) {
 
     if(db_rc == 1) {
         printf("Failed to initialize DB");
-        return 1;
+        goto error_cleanup;
     }
 
     int login_attempts = 0;
@@ -41,13 +41,18 @@ int main(void) {
 
     if(login_attempts >= MAX_LOGIN_ATTEMPTS) {
         printf("Max Login Attempts reached, stopping program");
-        return 0;
+        goto close_cleanup;
     }
 
     int err = run_main_menu();
 
-    if(err != 0) return 1;
+    if(err != 0) goto error_cleanup;
 
+    error_cleanup:
+        disconnect_db();
+        return 1;
 
-    return 0;
+    close_cleanup:
+        disconnect_db();
+        return 0;
 }
