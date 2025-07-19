@@ -17,6 +17,7 @@ int add_stock(void) {
     char input[ITEM_CODE_LENGTH + 1];
     int qty;
     double unit_cost;
+    double total_value;
     int item_id;
 
     char *select_sql = "SELECT item_code, item_name, id "
@@ -62,6 +63,8 @@ int add_stock(void) {
     scanf("%lf", &unit_cost);
     clear_input_buffer();
 
+    total_value = (qty * unit_cost);
+
     if(!(qty > 0) || !(unit_cost > 0)) {
        printf("\n\nQuantity or Value should be a non zero positive number\n\n"); 
        goto error_cleanup;
@@ -86,13 +89,12 @@ int add_stock(void) {
         goto txn_error;
     }
 
-
     if(prepare_stmt(db, update_sql, &update_stmt) == 1) {
         goto txn_error;
     }
 
     sqlite3_bind_int(update_stmt, 1, qty);
-    sqlite3_bind_double(update_stmt, 2, unit_cost);
+    sqlite3_bind_double(update_stmt, 2, total_value);
     sqlite3_bind_int(update_stmt, 3, item_id);
 
     if (step_and_check(db, update_stmt, 0) != 0) {
