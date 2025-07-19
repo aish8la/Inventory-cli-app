@@ -113,7 +113,7 @@ const char *initial_queries[] = {
     "id INTEGER PRIMARY KEY AUTOINCREMENT,"
     "issued_qty INTEGER CHECK(issued_qty != 0),"
     "item_id INTEGER NOT NULL, "
-    "FOREIGN KEY(item_id) REFERENCES items (id);",
+    "FOREIGN KEY(item_id) REFERENCES items (id));",
 
     //4)This creates the relationship table for stock issues and stock additions
     "CREATE TABLE IF NOT EXISTS stock_issues_add_relation ("
