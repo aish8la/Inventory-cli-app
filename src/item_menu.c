@@ -83,14 +83,14 @@ int view_items(void) {
     sqlite3 *db = get_db();
     sqlite3_stmt *stmt = NULL;
 
-    char *sql = "SELECT item_code, item_name "
+    char *sql = "SELECT item_code, item_name, current_qty, total_value "
                 "FROM items;";
 
     if(prepare_stmt(db, sql, &stmt) == 1) {
         goto cleanup;
     }
 
-    display_table(db, stmt, print_item_header, print_item_row);
+    display_table(db, stmt, print_stock_header, print_stoc_row);
 
     goto cleanup;
 
