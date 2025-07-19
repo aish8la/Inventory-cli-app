@@ -27,7 +27,7 @@ void print_stoc_row(sqlite3_stmt *stmt, int sn) {
     double value = sqlite3_column_double(stmt, 3);
 
 
-    printf("%-4s%-12.10s%-22.20s%-12d%-16.2f\n", sn, item_code, item_name, qty, value);
+    printf("%-4d%-12.10s%-22.20s%-12d%-16.2f\n", sn, item_code, item_name, qty, value);
 }
 
 //Function to display table

@@ -136,7 +136,6 @@ int issue_stock(void) {
 
     char input_itm_code[ITEM_CODE_LENGTH + 1];
     int issue_qty;
-    double unit_cost;
     int item_id;
     int current_qty;
     int issue_id;
