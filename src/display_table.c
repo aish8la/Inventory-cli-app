@@ -17,7 +17,7 @@ void print_item_row(sqlite3_stmt *stmt, int sn) {
 //Format to display Item List tables
 void print_stock_header(void) {
     printf("\n%-4s%-12.10s%-22.20s%-12s%-16s\n", "Sn", "Item Code", "Item Name", "Quantity", "Total Value");
-    printf("===================================\n");
+    printf("=====================================================================\n");
 }
 
 void print_stoc_row(sqlite3_stmt *stmt, int sn) {
