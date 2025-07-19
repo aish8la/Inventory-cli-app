@@ -281,6 +281,10 @@ int issue_stock(void) {
         sqlite3_bind_int(update_add_stmt, 1, issue_qty_current_txn);
         sqlite3_bind_int(update_add_stmt, 2, add_txn_id);
 
+        if (step_and_check(db, update_add_stmt, 0) != 0) {
+            goto txn_error;
+        }
+
         if(remaining_qty <= 0) {
             break;
         }
