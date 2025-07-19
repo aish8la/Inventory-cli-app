@@ -61,68 +61,28 @@ int add_stock(void) {
 }
 
 int issue_stock(void) {
-    sqlite3 *db = get_db();
-    sqlite3_stmt *select_itm_stmt = NULL;
-    sqlite3_stmt *select_add_stmt = NULL;
-    sqlite3_stmt *issue_stmt = NULL;
-    sqlite3_stmt *relation_stmt = NULL;
-    sqlite3_stmt *update_itm_stmt = NULL;
-    sqlite3_stmt *update_add_stmt = NULL;
-
     char input_itm_code[ITEM_CODE_LENGTH + 1];
     int issue_qty;
-    int item_id;
-    int current_qty;
-    int issue_id;
-
-    char *select_itm_sql = "SELECT item_code, item_name, current_qty, total_value, id "
-                        "FROM items "
-                        "WHERE item_code = ?;";
-    char *select_add_txn_sql = "SELECT id, unused_qty, unit_cost "
-                        "FROM stock_additions "
-                        "WHERE item_id = ? AND unused_qty > 0 "
-                        "ORDER BY id ASC;";
-    char *insert_issue_sql = "INSERT INTO stock_issues "
-                        "(issued_qty, item_id) "
-                        "VALUES (?, ?);";
-    char *insert_relation_sql = "INSERT INTO stock_issues_add_relation "
-                        "(issued_qty, stock_issues_id, stock_addition_id) "
-                        "VALUES (?, ?, ?);";
-    char *update_itm_sql = "UPDATE items "
-                        "SET current_qty = current_qty - ?, "
-                        "total_value = total_value - ? "
-                        "WHERE id = ?;";
-    char *update_add_sql = "UPDATE stock_additions "
-                        "SET unused_qty = unused_qty - ? "
-                        "WHERE id = ?;";
+    Item item;
 
     printf("Enter Item Code of Item: ");
     read_input(input_itm_code, sizeof(input_itm_code));
 
-    if(prepare_stmt(db, select_itm_sql, &select_itm_stmt) == 1) {
+    int result = db_get_item_by_code(input_itm_code, &item);
+    if(result != D_SUCCESS) {
+        printf("\n\nItem could not be found\n");
         goto cleanup;
     }
-    
-    sqlite3_bind_text(select_itm_stmt, 1, input_itm_code, -1, SQLITE_TRANSIENT);
 
     printf("\nItem to Issue Stock\n");
 
-    int found = display_table(db, select_itm_stmt, print_stock_header, print_stoc_row);
-    if(found != 0) {
-        goto cleanup;
-    }
+    printf("Code: [%s]\nName: [%s]\nAvailable Qty: [%d]\n\n", item.item_code, item.item_name, item.current_qty);
 
-    //TODO: May implement a function to display and also fetch the item id
-    //Here i reset the above stmt since display steps through it till it is done
-    sqlite3_reset(select_itm_stmt);
-    sqlite3_step(select_itm_stmt);
-    current_qty = sqlite3_column_int(select_itm_stmt, 2);
-    item_id = sqlite3_column_int(select_itm_stmt, 4);
-
-    if(current_qty <= 0) {
+    if(item.current_qty <= 0) {
         printf("\nSelected Item has no stock. Add Stock before Issue.\n");
         goto cleanup;
     }
+
 
     printf("\nEnter the Stock Issue Details;\n\n");
 
@@ -130,144 +90,34 @@ int issue_stock(void) {
     scanf("%d", &issue_qty);
     clear_input_buffer();
 
-    if(!(issue_qty > 0)) {
+    if(issue_qty <= 0) {
        printf("\n\nQuantity should be a non zero positive number\n\n"); 
        goto cleanup;
     }
 
-    if(issue_qty > current_qty) {
+    if(issue_qty > item.current_qty) {
        printf("\n\nNot enough stock to issue.\n\n"); 
        goto cleanup;
     }
 
-    if(begin_txn(db) != 0) {
-        goto cleanup;
-    }
+    result = db_issue_stock(item, issue_qty);
 
-    if(prepare_stmt(db, insert_issue_sql, &issue_stmt) == 1) {
-        goto txn_error;
-    }
-
-    sqlite3_bind_int(issue_stmt, 1, issue_qty);
-    sqlite3_bind_int(issue_stmt, 2, item_id);
-
-    if (step_and_check(db, issue_stmt, 0) != 0) {
-        goto txn_error;
-    }
-
-    issue_id = (int)sqlite3_last_insert_rowid(db);
-
-    if(prepare_stmt(db, select_add_txn_sql, &select_add_stmt) == 1) {
-        goto txn_error;
-    }
-
-    sqlite3_bind_int(select_add_stmt, 1, item_id);
-
-    if(prepare_stmt(db, insert_relation_sql, &relation_stmt) == 1) {
-        goto txn_error;
-    }
-
-    if(prepare_stmt(db, update_add_sql, &update_add_stmt) == 1) {
-        goto txn_error;
-    }
-
-    int remaining_qty = issue_qty;
-    double total_cost = 0;
-
-    while(1) {
-        int add_txn_id;
-        int txn_unused_qty;
-        double txn_unit_cost;
-        int issue_qty_current_txn = remaining_qty;
-
-        int rc = sqlite3_step(select_add_stmt);
-
-        if(rc != SQLITE_ROW) {
-            if(rc != SQLITE_DONE) {
-                fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
-            } else {
-                break;
-            }
-        }
-
-        add_txn_id = sqlite3_column_int(select_add_stmt, 0);
-        txn_unused_qty = sqlite3_column_int(select_add_stmt, 1);
-        txn_unit_cost = sqlite3_column_double(select_add_stmt, 2);
-
-        if(txn_unused_qty < issue_qty_current_txn) {
-            issue_qty_current_txn = txn_unused_qty;
-        }
-        remaining_qty -= issue_qty_current_txn;
-
-        total_cost += (txn_unit_cost * issue_qty_current_txn);
-
-
-
-        sqlite3_bind_int(relation_stmt, 1, issue_qty_current_txn);
-        sqlite3_bind_int(relation_stmt, 2, issue_id);
-        sqlite3_bind_int(relation_stmt, 3, add_txn_id);
-
-        if (step_and_check(db, relation_stmt, 0) != 0) {
-            goto txn_error;
-        }
-
-        sqlite3_bind_int(update_add_stmt, 1, issue_qty_current_txn);
-        sqlite3_bind_int(update_add_stmt, 2, add_txn_id);
-
-        if (step_and_check(db, update_add_stmt, 0) != 0) {
-            goto txn_error;
-        }
-
-        if(remaining_qty <= 0) {
-            break;
-        }
-
-        sqlite3_reset(relation_stmt);
-        sqlite3_reset(update_add_stmt);
-
-    }
-
-    if (remaining_qty > 0) {
-        printf("\nNot enough FIFO stock available to issue. Transaction aborted.\n");
-        goto txn_error;
-    }
-
-
-    if(prepare_stmt(db, update_itm_sql, &update_itm_stmt) == 1) {
-        goto txn_error;
-    }
-
-    sqlite3_bind_int(update_itm_stmt, 1, issue_qty);
-    sqlite3_bind_double(update_itm_stmt, 2, total_cost);
-    sqlite3_bind_int(update_itm_stmt, 3, item_id);
-
-    if (step_and_check(db, update_itm_stmt, 0) != 0) {
-        goto txn_error;
-    }
-
-    if (commit_txn(db) != 0) {
-        goto txn_error;
-    }
- 
- 
-    goto success;
-
-    success:
+    switch (result)
+    {
+    case D_SUCCESS:
         printf("\nStock Issued Successfully");
-        goto cleanup;
-
-    txn_error:
-        rollback_txn(db);
-        printf("\nTransaction Error Occurred\n");
-        goto cleanup;
+        break;
+    case D_NOT_ENOUGH_FIFO_STOCK:
+        printf("\nNot enough FIFO stock available. Data Inconsistent.");
+        break;          
+    default:
+        printf("\nError issuing stock");
+        break;
+    }
+ 
+    goto cleanup;
 
     cleanup:
-        if (select_itm_stmt) sqlite3_finalize(select_itm_stmt);
-        if (select_add_stmt) sqlite3_finalize(select_add_stmt);
-        if (issue_stmt) sqlite3_finalize(issue_stmt);
-        if (relation_stmt) sqlite3_finalize(relation_stmt);
-        if (update_itm_stmt) sqlite3_finalize(update_itm_stmt);
-        if (update_add_stmt) sqlite3_finalize(update_add_stmt);
         wait_for_enter();
         return 0;
 }
