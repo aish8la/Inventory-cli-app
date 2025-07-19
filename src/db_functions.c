@@ -106,3 +106,164 @@ int db_add_stock(int item_id, int qty, double unit_cost) {
         return result;
 
 }
+
+int db_issue_stock(Item item, int issue_qty) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *select_add_stmt = NULL;
+    sqlite3_stmt *issue_stmt = NULL;
+    sqlite3_stmt *relation_stmt = NULL;
+    sqlite3_stmt *update_itm_stmt = NULL;
+    sqlite3_stmt *update_add_stmt = NULL;
+    int result = D_ERROR;
+    int issue_id;
+    double total_cost = 0;
+
+    if(begin_txn(db) != 0) {
+        goto cleanup;
+    }
+
+    if(item.current_qty < issue_qty) {
+        result = D_NOT_ENOUGH_STOCK;
+        goto cleanup;
+    }
+
+    //Insert Stock Issues
+    char *insert_issue_sql = "INSERT INTO stock_issues "
+                        "(issued_qty, item_id) "
+                        "VALUES (?, ?);";
+
+    if(prepare_stmt(db, insert_issue_sql, &issue_stmt) == 1) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(issue_stmt, 1, issue_qty);
+    sqlite3_bind_int(issue_stmt, 2, item.item_id);
+
+    if (step_and_check(db, issue_stmt, 0) != 0) {
+        goto txn_error;
+    }
+
+    issue_id = (int)sqlite3_last_insert_rowid(db);
+
+
+    //Get Stock Additions in FIFO Order
+    char *select_add_txn_sql = "SELECT id, unused_qty, unit_cost "
+                        "FROM stock_additions "
+                        "WHERE item_id = ? AND unused_qty > 0 "
+                        "ORDER BY id ASC;";
+
+    if(prepare_stmt(db, select_add_txn_sql, &select_add_stmt) == 1) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(select_add_stmt, 1, item.item_id);
+
+    //Prepare relation statement
+    char *insert_relation_sql = "INSERT INTO stock_issues_add_relation "
+                        "(issued_qty, stock_issues_id, stock_addition_id) "
+                        "VALUES (?, ?, ?);";
+
+    if(prepare_stmt(db, insert_relation_sql, &relation_stmt) == 1) {
+        goto txn_error;
+    }
+
+    //Prepare update stock addition statement
+    char *update_add_sql = "UPDATE stock_additions "
+                        "SET unused_qty = unused_qty - ? "
+                        "WHERE id = ?;";
+
+    if(prepare_stmt(db, update_add_sql, &update_add_stmt) == 1) {
+        goto txn_error;
+    }
+
+//Process FIFO stock issue
+    int remaining_qty = issue_qty;
+    while(remaining_qty > 0) {
+
+        int rc = sqlite3_step(select_add_stmt);
+
+        if(rc != SQLITE_ROW) {
+            if(rc != SQLITE_DONE) {
+                fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
+            } else {
+                result = D_NOT_ENOUGH_FIFO_STOCK;
+            }
+            goto txn_error;
+        }
+
+        int add_txn_id = sqlite3_column_int(select_add_stmt, 0);
+        int txn_unused_qty = sqlite3_column_int(select_add_stmt, 1);
+        double txn_unit_cost = sqlite3_column_double(select_add_stmt, 2);
+
+        int issue_qty_current_txn;
+
+        //This checks if the unused qty of the selected add txn is more than the remain qty to be issued
+        if(txn_unused_qty < remaining_qty) {
+            issue_qty_current_txn = txn_unused_qty;
+        } else {
+            issue_qty_current_txn = remaining_qty;
+        }
+
+        remaining_qty -= issue_qty_current_txn;
+
+        total_cost += (txn_unit_cost * issue_qty_current_txn);
+
+        //Insert relation row 
+        sqlite3_bind_int(relation_stmt, 1, issue_qty_current_txn);
+        sqlite3_bind_int(relation_stmt, 2, issue_id);
+        sqlite3_bind_int(relation_stmt, 3, add_txn_id);
+
+        if (step_and_check(db, relation_stmt, 0) != 0) {
+            goto txn_error;
+        }
+
+
+        //Update selected Stock Addition entry
+        sqlite3_bind_int(update_add_stmt, 1, issue_qty_current_txn);
+        sqlite3_bind_int(update_add_stmt, 2, add_txn_id);
+
+        if (step_and_check(db, update_add_stmt, 0) != 0) {
+            goto txn_error;
+        }
+
+        sqlite3_reset(relation_stmt);
+        sqlite3_reset(update_add_stmt);
+    }
+    
+    //Update Item quantities and value
+    char *update_itm_sql = "UPDATE items "
+                        "SET current_qty = current_qty - ?, "
+                        "total_value = total_value - ? "
+                        "WHERE id = ?;";
+
+    if(prepare_stmt(db, update_itm_sql, &update_itm_stmt) == 1) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(update_itm_stmt, 1, issue_qty);
+    sqlite3_bind_double(update_itm_stmt, 2, total_cost);
+    sqlite3_bind_int(update_itm_stmt, 3, item.item_id);
+
+    if (step_and_check(db, update_itm_stmt, 0) != 0) {
+        goto txn_error;
+    }
+
+    if (commit_txn(db) != 0) {
+        goto txn_error;
+    }
+
+    result = D_SUCCESS;
+    goto cleanup;
+
+    txn_error:
+        rollback_txn(db);
+        goto cleanup;
+
+    cleanup:
+        if (select_add_stmt) sqlite3_finalize(select_add_stmt);
+        if (issue_stmt) sqlite3_finalize(issue_stmt);
+        if (relation_stmt) sqlite3_finalize(relation_stmt);
+        if (update_itm_stmt) sqlite3_finalize(update_itm_stmt);
+        if (update_add_stmt) sqlite3_finalize(update_add_stmt);
+        return result;
+}
