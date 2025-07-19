@@ -263,8 +263,8 @@ int issue_stock(void) {
 
         if(txn_unused_qty < issue_qty_current_txn) {
             issue_qty_current_txn = txn_unused_qty;
-            remaining_qty -= txn_unused_qty;
         }
+        remaining_qty -= issue_qty_current_txn;
 
         total_cost += (txn_unit_cost * issue_qty_current_txn);
 
@@ -277,8 +277,6 @@ int issue_stock(void) {
         if (step_and_check(db, relation_stmt, 0) != 0) {
             goto txn_error;
         }
-
-
 
         sqlite3_bind_int(update_add_stmt, 1, issue_qty_current_txn);
         sqlite3_bind_int(update_add_stmt, 2, add_txn_id);
