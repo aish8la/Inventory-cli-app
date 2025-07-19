@@ -7,51 +7,26 @@
 #include <stdio.h>
 #include "stdlib.h"
 #include "init_db.h"
+#include "db_functions.h"
 
 int add_stock(void) {
-    sqlite3 *db = get_db();
-    sqlite3_stmt *stmt = NULL;
-    sqlite3_stmt *add_stmt = NULL;
-    sqlite3_stmt *update_stmt = NULL;
-
-    char input[ITEM_CODE_LENGTH + 1];
+    char input_itm_code[ITEM_CODE_LENGTH];
     int qty;
     double unit_cost;
-    double total_value;
-    int item_id;
-
-    char *select_sql = "SELECT item_code, item_name, id "
-                        "FROM items "
-                        "WHERE item_code = ?;";
-    char *insert_sql = "INSERT INTO stock_additions "
-                        "(added_qty, unit_cost, unused_qty, item_id) "
-                        "VALUES (?, ?, ?, ?);";
-    char *update_sql = "UPDATE items "
-                        "SET current_qty = current_qty + ?, "
-                        "total_value = total_value + ? "
-                        "WHERE id = ?;";
-
-    printf("Enter Item Code of Item: ");
-    read_input(input, sizeof(input));
-
-    if(prepare_stmt(db, select_sql, &stmt) == 1) {
-        goto error_cleanup;
-    }
+    Item item;
     
-    sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
+    printf("Enter Item Code of Item: ");
+    read_input(input_itm_code, sizeof(input_itm_code));
+
+    int result = db_get_item_by_code(input_itm_code, &item);
+    if(result != D_SUCCESS) {
+        printf("\n\nItem could not be found\n");
+        goto cleanup;
+    }
 
     printf("\nItem to Add Stock\n");
 
-    int found = display_table(db, stmt, print_item_header, print_item_row);
-    if(found != 0) {
-        goto error_cleanup;
-    }
-
-    //TODO: May implement a function to display and also fetch the item id
-    //Here i reset the above stmt since display steps through it till it is done
-    sqlite3_reset(stmt);
-    sqlite3_step(stmt);
-    item_id = sqlite3_column_int(stmt, 2);
+    printf("Code: [%s]\nName: [%s]\n\n", item.item_code, item.item_name);
 
     printf("\nEnter the Stock Addition Details;\n\n");
 
@@ -63,66 +38,24 @@ int add_stock(void) {
     scanf("%lf", &unit_cost);
     clear_input_buffer();
 
-    total_value = (qty * unit_cost);
-
-    if(!(qty > 0) || !(unit_cost > 0)) {
+    if(qty <= 0 || unit_cost <= 0) {
        printf("\n\nQuantity or Value should be a non zero positive number\n\n"); 
-       goto error_cleanup;
+       goto cleanup;
     }
 
     printf("Total Cost is : %.2lf \n", qty * unit_cost);
 
-    if(begin_txn(db) != 0) {
-        goto error_cleanup;
-    }
+    result = db_add_stock(item.item_id, qty, unit_cost);
 
-    if(prepare_stmt(db, insert_sql, &add_stmt) == 1) {
-        goto error_cleanup;
-    }
-
-    sqlite3_bind_int(add_stmt, 1, qty);
-    sqlite3_bind_double(add_stmt, 2, unit_cost);
-    sqlite3_bind_int(add_stmt, 3, qty);
-    sqlite3_bind_int(add_stmt, 4, item_id);
-
-    if (step_and_check(db, add_stmt, 0) != 0) {
-        goto txn_error;
-    }
-
-    if(prepare_stmt(db, update_sql, &update_stmt) == 1) {
-        goto txn_error;
-    }
-
-    sqlite3_bind_int(update_stmt, 1, qty);
-    sqlite3_bind_double(update_stmt, 2, total_value);
-    sqlite3_bind_int(update_stmt, 3, item_id);
-
-    if (step_and_check(db, update_stmt, 0) != 0) {
-        goto txn_error;
-    }
-
-    if (commit_txn(db) != 0) {
-        goto txn_error;
+    if(result == D_SUCCESS) {
+        printf("\n\nStock Added Successfully\n");
+    } else {
+        printf("\n\nError Adding Stock\n");
     }
  
-    goto success;
-
-    success:
-        printf("\nStock Added Successfully");
-        goto cleanup;
-
-    error_cleanup:
-        printf("\nError Occurred");
-        goto cleanup;
-
-    txn_error:
-        rollback_txn(db);
-        goto error_cleanup;
+    goto cleanup;
 
     cleanup:
-        if (stmt) sqlite3_finalize(stmt);
-        if (add_stmt) sqlite3_finalize(add_stmt);
-        if (update_stmt) sqlite3_finalize(update_stmt);
         wait_for_enter();
         return 0;
 }
