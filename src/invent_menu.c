@@ -304,7 +304,7 @@ int issue_stock(void) {
     sqlite3_bind_double(update_itm_stmt, 2, total_cost);
     sqlite3_bind_int(update_itm_stmt, 3, item_id);
 
-    if (step_and_check(db, relation_stmt, 0) != 0) {
+    if (step_and_check(db, update_itm_stmt, 0) != 0) {
         goto txn_error;
     }
 
