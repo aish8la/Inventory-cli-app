@@ -11,18 +11,11 @@ enum db_error {
     D_NOT_ENOUGH_STOCK,
     D_NOT_ENOUGH_FIFO_STOCK,
     D_UNIQUE_CONSTRAINT_VIOLATION,
+    D_MEMORY_ALLOC_FAILED,
 };
 
-typedef struct {
-    int item_id;
-    char item_code[ITEM_CODE_LENGTH + 1];
-    char item_name[ITEM_NAME_LENGTH + 1];
-    int current_qty;
-    double total_value;
-} Item;
-
-
 int db_add_item(const char *item_code, const char *item_name);
+int db_get_all_items(Item **items, int *count);
 int db_get_item_by_code(const char *input_item_code, Item *item);
 int db_add_stock(int item_id, int qty, double unit_cost);
 int db_issue_stock(Item item, int issue_qty);

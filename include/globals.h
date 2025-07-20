@@ -31,6 +31,15 @@ typedef struct {
     int user_count;
 } User_Array;
 
+//Item Structu
+typedef struct {
+    int item_id;
+    char item_code[ITEM_CODE_LENGTH + 1];
+    char item_name[ITEM_NAME_LENGTH + 1];
+    int current_qty;
+    double total_value;
+} Item;
+
 /*This is a type def of a Menu item structure which will hold the pointer to the menu item function
 and the label of the menu item
 this allows for dynamic menu generation*/
