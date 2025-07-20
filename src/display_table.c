@@ -86,16 +86,17 @@ void display_selected_stock_issue(const Stock_Issue *issue) {
 //Additions Headers
 // Print header for Stock_Addition list
 void format_additions_header(void) {
-    printf("\n""%-5s  %-15s  %-30s  %-10s  %-10s  %-10s  %-12s\n",
-           "Sn.", "Item Code", "Item Name", "AddedQty", "UnitCost", "UnusedQty", "TotalCost");
-    printf("%-5s  %-15s  %-30s  %-10s  %-10s  %-10s  %-12s\n",
-           "----", "---------", "---------", "--------", "--------", "--------", "---------");
+    printf("\n%-5s  %-8s  %-15s  %-30s  %-10s  %-10s  %-10s  %-12s\n",
+           "Sn.", "Add.ID", "Item Code", "Item Name", "AddedQty", "UnitCost", "UnusedQty", "TotalCost");
+    printf("%-5s  %-8s  %-15s  %-30s  %-10s  %-10s  %-10s  %-12s\n",
+           "----", "-------", "---------", "---------", "--------", "--------", "--------", "---------");
 }
 
 // Print one row for a Stock_Addition
 void format_additions_row(const Stock_Addition *addition, int index) {
-    printf("%-5d  %-15s  %-30s  %-10d  %-10.2f  %-10d  %-12.2f\n",
+    printf("%-5d  %-8d  %-15s  %-30s  %-10d  %-10.2f  %-10d  %-12.2f\n",
            index + 1,
+           addition->addition_id,
            addition->item_code,
            addition->item_name,
            addition->added_qty,
@@ -127,16 +128,17 @@ void display_additions_table(Stock_Addition *additions, int count, void (*print_
 // Print header for StockIssue list
 void format_issues_header(void) {
     printf("\n"
-           "%-5s  %-15s  %-30s  %-10s  %-12s\n",
-           "Sn.", "Item Code", "Item Name", "IssuedQty", "TotalCost");
-    printf("%-5s  %-15s  %-30s  %-10s  %-12s\n",
-           "----", "---------", "---------", "---------", "---------");
+           "%-5s  %-8s  %-15s  %-30s  %-10s  %-12s\n",
+           "Sn.", "IssueID", "Item Code", "Item Name", "IssuedQty", "TotalCost");
+    printf("%-5s  %-8s  %-15s  %-30s  %-10s  %-12s\n",
+           "----", "--------", "---------", "---------", "---------", "---------");
 }
 
 // Print one row for a StockIssue
 void format_issues_row(const Stock_Issue *issue, int index) {
-    printf("%-5d  %-15s  %-30s  %-10d  %-12.2f\n",
+    printf("%-5d  %-8d  %-15s  %-30s  %-10d  %-12.2f\n",
            index + 1,
+           issue->issue_id,
            issue->item_code,
            issue->item_name,
            issue->issued_qty,
