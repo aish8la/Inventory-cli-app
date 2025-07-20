@@ -17,6 +17,7 @@ enum db_error {
 int db_add_item(const char *item_code, const char *item_name);
 int db_get_all_items(Item **items, int *count);
 int db_get_item_by_code(const char *input_item_code, Item *item);
+int db_update_item(const char *old_item_code, const char *new_item_code, const char *new_item_name);
 int db_add_stock(int item_id, int qty, double unit_cost);
 int db_issue_stock(Item item, int issue_qty);
 

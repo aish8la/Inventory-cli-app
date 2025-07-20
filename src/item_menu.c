@@ -103,38 +103,24 @@ int search_item(void) {
 }
 
 int edit_item(void) {
-    sqlite3 *db = get_db();
-    sqlite3_stmt *stmt = NULL;
+    char input_itm_code[ITEM_CODE_LENGTH + 1];
+    char new_itm_code[ITEM_CODE_LENGTH + 1];
+    char new_itm_name[ITEM_NAME_LENGTH + 1];
+    Item item;
 
-    char *select_sql = "SELECT item_code, item_name "
-                "FROM items "
-                "WHERE item_code = ?;";
-    char *edit_sql = "UPDATE items SET item_code = ?, item_name = ? "
-                "WHERE item_code = ?;";
-
-    char input[ITEM_CODE_LENGTH];
-    char new_itm_code[ITEM_CODE_LENGTH];
-    char new_itm_name[ITEM_NAME_LENGTH];
-
-    if(prepare_stmt(db, select_sql, &stmt) == 1) {
-        goto cleanup;
-    }
-
+    //Check if Item Exists and displays it
     printf("Enter Item Code of Item to edit: ");
-    read_input(input, sizeof(input));
+    read_input(input_itm_code, sizeof(input_itm_code));
 
-    sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
-
-    //TODO: Create a helper to select item and show the selected items
-    printf("\nOld Item Details\n");
-
-    int found = display_table(db, stmt, print_item_header, print_item_row);
-    if(found != 0) {
+    int result = db_get_item_by_code(input_itm_code, &item);
+    if(result != D_SUCCESS) {
+        printf("Item with code '%s' not found.\n", input_itm_code);
         goto cleanup;
     }
- 
-    sqlite3_finalize(stmt);
-    stmt = NULL;
+
+    printf("\nOld Item Details\n");
+    display_selected_item(&item);
+
 
     printf("\nEnter Updated Item Details;\n\n");
 
@@ -149,24 +135,26 @@ int edit_item(void) {
         goto cleanup;
     }
 
-    if(prepare_stmt(db, edit_sql, &stmt) == 1) {
-        goto cleanup;
+    //Perform Record Update
+    result = db_update_item(input_itm_code, new_itm_code, new_itm_name);
+    switch (result) {
+        case D_SUCCESS:
+            printf("Record Updated Successfully");
+            break;
+        case D_NOT_FOUND:
+            printf("Item not found for update");
+            break;
+        case D_UNIQUE_CONSTRAINT_VIOLATION:
+            printf("New item code already exists. Please use a unique code.");
+            break;
+        default:
+            printf("Error updating item");
+            break;
     }
-
-    sqlite3_bind_text(stmt, 1, new_itm_code, -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt, 2, new_itm_name, -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt, 3, input, -1, SQLITE_TRANSIENT);
-
-    if (step_and_check(db, stmt, 0) != 0) {
-        goto cleanup;
-    }
-
-    printf("Record Updated Successfully");
 
     goto cleanup;
 
     cleanup:
-        if (stmt) sqlite3_finalize(stmt);
         wait_for_enter();
         return 0;
 }

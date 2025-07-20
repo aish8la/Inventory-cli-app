@@ -110,7 +110,38 @@ int db_get_all_items(Item **items, int *count) {
         return result;
 }
 
-//Inventory Menu DB Functions
+int db_update_item(const char *old_item_code, const char *new_item_code, const char *new_item_name) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *stmt = NULL;
+    int result = D_ERROR;
+
+    char *edit_sql = "UPDATE items SET item_code = ?, item_name = ? "
+                "WHERE item_code = ?;";
+
+    if(prepare_stmt(db, edit_sql, &stmt) != 0) {
+        goto cleanup;
+    }
+
+    sqlite3_bind_text(stmt, 1, new_item_code, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, new_item_name, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, old_item_code, -1, SQLITE_TRANSIENT);
+
+    if (step_and_check(db, stmt, 0) != 0) {
+        if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_UNIQUE) {
+            result = D_UNIQUE_CONSTRAINT_VIOLATION; 
+        }
+        goto cleanup;
+    }
+
+    result = D_SUCCESS;
+
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        return result;
+}
+
 int db_get_item_by_code(const char *input_item_code, Item *item) {
     sqlite3 *db = get_db();
     sqlite3_stmt *search_stmt = NULL;
@@ -147,6 +178,7 @@ int db_get_item_by_code(const char *input_item_code, Item *item) {
         return result;
 }
 
+//Inventory Menu DB Functions
 int db_add_stock(int item_id, int qty, double unit_cost) {
     sqlite3 *db = get_db();
     sqlite3_stmt *add_stmt = NULL;
