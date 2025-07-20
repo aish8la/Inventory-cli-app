@@ -1,5 +1,6 @@
 #include "sqlite3.h"
 #include <stdio.h>
+#include "globals.h"
 
 //Format to display Item List tables
 void print_item_header(void) {
@@ -52,4 +53,40 @@ int display_table(sqlite3 *db, sqlite3_stmt *stmt, void (*display_header)(void),
     }
 
     return 0;
+}
+
+//Print Header Formats
+//Item Headers
+void format_item_header(void) {
+    printf("\n%-5s %-15s %-30s %-12s %-12s\n", "Sn.", "Item Code", "Item Name", "Current Qty", "Total Value");
+    printf("%-5s %-15s %-30s %-12s %-12s\n", "----", "----------", "---------", "-----------", "-----------");
+}
+
+
+//Print Row Formats
+//Item Rows
+void format_item_row(const Item *item, int index) {
+    printf("%-5d %-15s %-30s %-12d %-12.2f\n",
+           index + 1,
+           item->item_code,
+           item->item_name,
+           item->current_qty,
+           item->total_value);
+}
+
+
+//Display Item Rows
+void display_item_table(Item *items, int count, void (*print_header)(void), void (*print_row)(const Item *, int)) {
+    if (!items || count <= 0) {
+        printf("No items to display.\n");
+        return;
+    }
+
+    if (print_header) print_header();
+
+    for (int i = 0; i < count; i++) {
+        print_row(&items[i], i);
+    }
+
+    printf("\nTotal Items: %d\n", count);
 }
