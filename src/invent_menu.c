@@ -149,6 +149,27 @@ int view_additions(void) {
 }
 
 int view_issues(void) {
+    Stock_Issue *issues = NULL;
+    int count = 0;
+
+    int result = db_get_all_stock_issues(&issues, &count);
+
+    switch (result) {
+    case D_SUCCESS:
+        display_issues_table(issues, count, format_issues_header, format_issues_row);
+        break;
+    case D_NOT_FOUND:
+        printf("\nNo stock issues found.\n");
+        break;
+    default:
+        printf("\nError retrieving stock issues.\n");
+        break;
+    }
+
+    if (issues) {
+        free(issues);
+    }
+
     wait_for_enter();
     return 0;
 }
