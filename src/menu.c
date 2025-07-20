@@ -136,13 +136,9 @@ int item_menu(void) {
 int invent_menu(void) {
 
     Menu_Item invent_menu[] = {
-        {"Add Stock", add_stock, 2},
-        {"Issue Stock", issue_stock, 2},
-        {"View Stock Additions", view_additions, 1},
-        {"View Issues", view_issues, 1},
+        {"Stock Addition Menu", stock_add_menu, 1},
+        {"Stock Issue Menu", stock_issue_menu, 1},
         {"View Inventory", view_inventory, 1},
-        {"Delete Stock Addition Entry", delete_stock_addition, 3},
-        {"Delete Stock Issue Entry", delete_stock_issue, 3}
     };
 
     int menu_count = sizeof(invent_menu) / sizeof(invent_menu[0]);
@@ -150,6 +146,46 @@ int invent_menu(void) {
     const char* title = "Inventory Menu";
 
     int err = run_menu(title, invent_menu, menu_count);
+
+    
+    if(err != 0) return 1;
+
+    return 0;
+}
+
+int stock_add_menu(void) {
+
+    Menu_Item add_menu[] = {
+        {"Add Stock", add_stock, 2},
+        {"View Stock Additions", view_additions, 1},
+        {"Delete Stock Addition Entry", delete_stock_addition, 3},
+    };
+
+    int menu_count = sizeof(add_menu) / sizeof(add_menu[0]);
+
+    const char* title = "Stock Addition Menu";
+
+    int err = run_menu(title, add_menu, menu_count);
+
+    
+    if(err != 0) return 1;
+
+    return 0;
+}
+
+int stock_issue_menu(void) {
+
+    Menu_Item issue_menu[] = {
+        {"Issue Stock", issue_stock, 2},
+        {"View Issues", view_issues, 1},
+        {"Delete Stock Issue Entry", delete_stock_issue, 3}
+    };
+
+    int menu_count = sizeof(issue_menu) / sizeof(issue_menu[0]);
+
+    const char* title = "Stock Issue Menu Menu";
+
+    int err = run_menu(title, issue_menu, menu_count);
 
     
     if(err != 0) return 1;

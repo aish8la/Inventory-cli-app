@@ -5,6 +5,7 @@ int run_main_menu(void);
 
 int invent_menu(void);
 int item_menu(void);
-int setting_menu(void);
+int stock_add_menu(void);
+int stock_issue_menu(void);
 
 #endif
