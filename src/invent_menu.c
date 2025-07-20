@@ -276,7 +276,7 @@ int delete_stock_issue(void) {
     }
 
     // Perform the delete operation
-    result = db_delete_stock_issue(issue_id);
+    result = db_delete_stock_issue(issue);
     switch (result) {
         case D_SUCCESS:
             printf("Stock Issue [%d] Deleted Successfully", issue_id);
