@@ -40,6 +40,26 @@ typedef struct {
     double total_value;
 } Item;
 
+typedef struct {
+    int addition_id;
+    int item_id;
+    char item_code[ITEM_CODE_LENGTH + 1];
+    char item_name[ITEM_NAME_LENGTH + 1];
+    int added_qty;
+    double unit_cost;
+    int unused_qty;
+    double total_cost;
+} Stock_Addition;
+
+typedef struct {
+    int issue_id;
+    int item_id;
+    char item_code[ITEM_CODE_LENGTH + 1];
+    char item_name[ITEM_NAME_LENGTH + 1];
+    int issued_qty;
+    double total_cost;
+} Stock_Issue;
+
 /*This is a type def of a Menu item structure which will hold the pointer to the menu item function
 and the label of the menu item
 this allows for dynamic menu generation*/
