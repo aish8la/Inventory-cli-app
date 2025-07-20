@@ -99,7 +99,6 @@ int run_main_menu(void) {
     Menu_Item main_menu[] = {
         {"Inventory Transactions", invent_menu, 1},
         {"Items Menu", item_menu, 1},
-        {"Settings", setting_menu, 3},
     };
 
     int menu_count = sizeof(main_menu) / sizeof(main_menu[0]);
@@ -153,12 +152,5 @@ int invent_menu(void) {
     
     if(err != 0) return 1;
 
-    return 0;
-}
-
-//TODO: Implement this
-int setting_menu(void) {
-    printf("This is the setting menu");
-    wait_for_enter();
     return 0;
 }
