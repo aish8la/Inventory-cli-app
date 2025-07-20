@@ -1,9 +1,8 @@
 # Compiling `inventory-system.c`
 
-This guide explains how to compile the single-file `inventory-system.c` Inventory Management System using either:
+This guide explains how to compile the single-file `inventory-system.c` Inventory Management System using:
 
 - **SQLite amalgamation** (with `sqlite3.c` and `sqlite3.h`)
-- **System-installed SQLite library** (if available)
 
 ---
 
@@ -13,7 +12,7 @@ This guide explains how to compile the single-file `inventory-system.c` Inventor
 - SQLite3 development files
 ---
 
-## ✅ Compile on Linux/macOS
+## Compile on Linux/macOS
 
 ### Option 1: Using SQLite Amalgamation
 
@@ -25,11 +24,11 @@ gcc inventory-system.c sqlite3.c -o inventory_system
 
 ---
 
-## ✅ Compile on Windows (MSYS2/MinGW)
+## Compile on Windows (MSYS2/CMD)
 
 ### Option 1: With SQLite Amalgamation
 
-Open the **MSYS2 terminal** or **MinGW shell**, then run:
+Open the **MSYS2 terminal** or **CMD**, then run:
 
 ```bash
 gcc inventory-system.c sqlite3.c -o inventory_system.exe
@@ -43,7 +42,7 @@ Then run the program:
 
 ---
 
-## 📦 Output
+## Output
 
 * **Executable name:** `inventory_system` (or `inventory_system.exe` on Windows)
 * **Database file:** `data.db` (created automatically)
