@@ -4,6 +4,7 @@
 #include "sqlite_helpers.h"
 #include "init_db.h"
 #include "globals.h"
+#include "stdlib.h"
 
 //Item Menu DB Functions
 int db_add_item(const char *item_code, const char *item_name) {
