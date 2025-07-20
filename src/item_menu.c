@@ -160,36 +160,23 @@ int edit_item(void) {
 }
 
 int delete_item(void) {
-    sqlite3 *db = get_db();
-    sqlite3_stmt *stmt = NULL;
-
-    char *select_sql = "SELECT item_code, item_name "
-                "FROM items "
-                "WHERE item_code = ?;";
-    char *delete_sql = "DELETE FROM items "
-                "WHERE item_code = ?;";
-
-    if(prepare_stmt(db, select_sql, &stmt) == 1) {
-        goto cleanup;
-    }
-
-    char input[ITEM_CODE_LENGTH];
+    char input_itm_code[ITEM_CODE_LENGTH + 1];
+    Item item;
 
     printf("Enter Item Code of Item to Delete: ");
-    read_input(input, sizeof(input));
+    read_input(input_itm_code, sizeof(input_itm_code));
 
-    sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
-
-    printf("\nItem Selected for Delete Operation\n\n");
-    
-    int found = display_table(db, stmt, print_item_header, print_item_row);
-    if(found != 0) {
+    //Check if Item exist and display
+    int result = db_get_item_by_code(input_itm_code, &item);
+    if(result != D_SUCCESS) {
+        printf("Item with code '%s' not found.\n", input_itm_code);
         goto cleanup;
     }
 
-    sqlite3_finalize(stmt);
-    stmt = NULL;
+    printf("\nItem Selected for Delete Operation\n");
+    display_selected_item(&item);
 
+    //Prompt User if they want to delete the selected item
     char *prompt = "\nConfirm Delete Operation ?\n";
     char *cancel_msg = "\nCancelled Delete Operation.\n";
 
@@ -197,25 +184,23 @@ int delete_item(void) {
         goto cleanup;
     }
 
-    if(prepare_stmt(db, delete_sql, &stmt) == 1) {
-        goto cleanup;
+    //Perform the Delete Operation
+    result = db_delete_item(input_itm_code);
+    switch (result) {
+        case D_SUCCESS:
+            printf("Item [%s] Deleted Successfully", input_itm_code);
+            break;
+        case D_FOREIGNKEY_VIOLATION:
+            printf("Item has one or more related transactions. Delete those first.");
+            break;
+        default:
+            printf("Error deleting item");
+            break;
     }
-
-    sqlite3_bind_text(stmt, 1, input, -1, SQLITE_TRANSIENT);
-
-    if (step_and_check(db, stmt, 0) != 0) {
-        if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY) {
-            printf("Item has one or more related transactions. Delete those first.\n");
-        }
-        goto cleanup;
-    }
-
-    printf("Item [%s] Deleted Successfully", input);
 
     goto cleanup;
 
     cleanup:
-        if (stmt) sqlite3_finalize(stmt);
         wait_for_enter();
         return 0;
 }

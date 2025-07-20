@@ -142,6 +142,37 @@ int db_update_item(const char *old_item_code, const char *new_item_code, const c
         return result;
 }
 
+int db_delete_item(const char *item_code) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *stmt = NULL;
+    int result = D_ERROR;
+
+    char *delete_sql = "DELETE FROM items "
+                "WHERE id = ?;";
+
+
+    if(prepare_stmt(db, delete_sql, &stmt) == 1) {
+        goto cleanup;
+    }
+
+    sqlite3_bind_text(stmt, 1, item_code, -1, SQLITE_TRANSIENT);
+
+    if (step_and_check(db, stmt, 0) != 0) {
+        if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY) {
+            result = D_FOREIGNKEY_VIOLATION;
+        }
+        goto cleanup;
+    }
+
+    result = D_SUCCESS;
+
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        return result;
+}
+
 int db_get_item_by_code(const char *input_item_code, Item *item) {
     sqlite3 *db = get_db();
     sqlite3_stmt *search_stmt = NULL;
