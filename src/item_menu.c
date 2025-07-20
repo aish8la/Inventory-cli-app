@@ -80,37 +80,26 @@ int view_items(void) {
 }
 
 int search_item(void) {
+    char input_itm_code[ITEM_CODE_LENGTH];
+    Item item;
+    
+    printf("Enter Item Code of Item to Search: ");
+    read_input(input_itm_code, sizeof(input_itm_code));
 
-    sqlite3 *db = get_db();
-    sqlite3_stmt *stmt = NULL;
-
-    char *sql = "SELECT item_code, item_name "
-                "FROM items "
-                "WHERE item_code LIKE ?;";
-
-
-    char input[ITEM_CODE_LENGTH];
-    char bind_param[ITEM_CODE_LENGTH + 10];
-
-    if(prepare_stmt(db, sql, &stmt) == 1) {
-        goto cleanup;
+    int result = db_get_item_by_code(input_itm_code, &item);
+    if(result == D_NOT_FOUND) {
+        printf("\n\nItem could not be found\n");
+    } else if(result != D_SUCCESS) {
+        printf("\nDatabase Error\n\n");
+    } else {
+        //Uses the display format item header and row function to display the searched item
+        format_item_header();
+        format_item_row(&item, 0);
     }
 
-    printf("Enter Item Code: ");
-    read_input(input, sizeof(input));
 
-    snprintf(bind_param, sizeof(bind_param), "%%%s%%", input); // This adds % to the start and end of input so fuzzy search is possible with LIKE clause
-
-    sqlite3_bind_text(stmt, 1, bind_param, -1, SQLITE_TRANSIENT);
-
-    display_table(db, stmt, print_item_header, print_item_row);
-
-    goto cleanup;
-
-    cleanup:
-        if (stmt) sqlite3_finalize(stmt);
-        wait_for_enter();
-        return 0;
+    wait_for_enter();
+    return 0;
 }
 
 int edit_item(void) {
