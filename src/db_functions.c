@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "sqlite_helpers.h"
 #include "init_db.h"
+#include "globals.h"
 
 //Item Menu DB Functions
 int db_add_item(const char *item_code, const char *item_name) {
@@ -43,6 +44,70 @@ int db_add_item(const char *item_code, const char *item_name) {
         return result;
 }
 
+int db_get_all_items(Item **items, int *count) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *stmt = NULL;
+    *items = NULL;
+    *count = 0;
+    int result = D_ERROR;
+
+    char *sql = "SELECT id, item_code, item_name, current_qty, total_value "
+                "FROM items;";
+
+    if(prepare_stmt(db, sql, &stmt) == 1) {
+        goto cleanup;
+    }
+
+    int row_count = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        row_count++;
+    }
+
+    if (row_count == 0) {
+        result = D_NOT_FOUND;
+        goto cleanup;
+    }
+
+    // Allocate memory
+    *items = malloc(sizeof(Item) * row_count);
+    if (!*items) {
+        result = D_MEMORY_ALLOC_FAILED;
+        goto cleanup;
+    }
+
+    sqlite3_reset(stmt);
+    int i = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count) {
+        Item *item = &(*items)[i];//Dereferences the pointer to the array, gets the i-th Item and passes the memory address of that to the *item
+
+        item->item_id = sqlite3_column_int(stmt, 0);
+
+        const unsigned char *code = sqlite3_column_text(stmt, 1);
+        const unsigned char *name = sqlite3_column_text(stmt, 2);
+
+        snprintf(item->item_code, sizeof(item->item_code), "%s", code ? (const char *)code : "");//if null put empty string
+        snprintf(item->item_name, sizeof(item->item_name), "%s", name ? (const char *)name : "");
+
+        item->current_qty = sqlite3_column_int(stmt, 3);
+        item->total_value = sqlite3_column_double(stmt, 4);
+
+        i++;
+    }
+
+    *count = row_count;
+    result = D_SUCCESS;    
+
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (result != D_SUCCESS && *items) {
+            free(*items);
+            *items = NULL;
+            *count = 0;
+        }
+        return result;
+}
 
 //Inventory Menu DB Functions
 int db_get_item_by_code(const char *input_item_code, Item *item) {
