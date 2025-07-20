@@ -687,3 +687,50 @@ int db_delete_stock_addition(Stock_Addition addition) {
         if (update_stmt) sqlite3_finalize(update_stmt);
         return result;
 }
+
+int db_get_stock_issue_by_id(int issue_id, Stock_Issue *issue) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *stmt = NULL;
+    int result = D_ERROR;
+
+    char *sql = "SELECT si.id, si.item_id, i.item_code, i.item_name, "
+                "si.issued_qty, "
+                "SUM(siar.issued_qty * sa.unit_cost) AS total_cost "
+                "FROM stock_issues AS si "
+                "JOIN items AS i ON si.item_id = i.id "
+                "JOIN stock_issues_add_relation AS siar ON si.id = siar.stock_issues_id "
+                "JOIN stock_additions AS sa ON siar.stock_addition_id = sa.id "
+                "WHERE si.id = ? "
+                "GROUP BY si.id, si.item_id, i.item_code, i.item_name, si.issued_qty;";
+
+    if(prepare_stmt(db, sql, &stmt) != 0) {
+        goto cleanup;
+    }
+
+    sqlite3_bind_int(stmt, 1, issue_id);
+
+    int rc = sqlite3_step(stmt);
+    if(rc == SQLITE_ROW) {
+        issue->issue_id = sqlite3_column_int(stmt, 0);
+        issue->item_id = sqlite3_column_int(stmt, 1);
+        
+        const unsigned char *code = sqlite3_column_text(stmt, 2);
+        const unsigned char *name = sqlite3_column_text(stmt, 3);
+        
+        snprintf(issue->item_code, sizeof(issue->item_code), "%s", code ? (const char *)code : "");
+        snprintf(issue->item_name, sizeof(issue->item_name), "%s", name ? (const char *)name : "");
+        
+        issue->issued_qty = sqlite3_column_int(stmt, 4);
+        issue->total_cost = sqlite3_column_double(stmt, 5);
+        
+        result = D_SUCCESS;
+    } else if (rc == SQLITE_DONE) {
+        result = D_NOT_FOUND;
+    }
+
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        return result;
+}
