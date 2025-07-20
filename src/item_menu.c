@@ -41,7 +41,7 @@ int add_item(void) {
             printf("Error adding item.\n");
             goto cleanup;
         }
-        
+
         const char *add_another_msg = "\nWould you like to add another item ?";
         const char *cancel_msg = "\nDone Adding Items.";
 
@@ -59,24 +59,24 @@ int add_item(void) {
 
 int view_items(void) {
 
-    sqlite3 *db = get_db();
-    sqlite3_stmt *stmt = NULL;
+    Item *items = NULL;
+    int count = 0;
 
-    char *sql = "SELECT item_code, item_name, current_qty, total_value "
-                "FROM items;";
-
-    if(prepare_stmt(db, sql, &stmt) == 1) {
-        goto cleanup;
+    int result = db_get_all_items(&items, &count);
+    if(result == D_NOT_FOUND) {
+        printf("No items found in the database.\n");
+    } else if (result != D_SUCCESS) {
+        printf("\nDatabase Error\n\n");
+    } else {
+        display_item_table(items, count, format_item_header, format_item_row);
     }
 
-    display_table(db, stmt, print_stock_header, print_stoc_row);
 
-    goto cleanup;
 
-    cleanup:
-        if (stmt) sqlite3_finalize(stmt);
-        wait_for_enter();
-        return 0;
+
+    if (items) free(items);
+    wait_for_enter();
+    return 0;
 }
 
 int search_item(void) {
