@@ -90,3 +90,12 @@ void display_item_table(Item *items, int count, void (*print_header)(void), void
 
     printf("\nTotal Items: %d\n", count);
 }
+
+
+void display_selected_item(const Item *item) {
+    printf("Code: [%s]\nName: [%s]\n\n", item->item_code, item->item_name);
+}
+
+void display_selected_item_qty(const Item *item) {
+    printf("Code: [%s]\nName: [%s]\nAvailable Qty: [%d]\n\n", item->item_code, item->item_name, item->current_qty);
+}

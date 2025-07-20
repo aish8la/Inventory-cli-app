@@ -17,4 +17,7 @@ void format_item_header(void);
 void format_item_row(const Item *item, int index);
 void display_item_table(Item *items, int count, void (*print_header)(void), void (*print_row)(const Item *, int));
 
+void display_selected_item(const Item *item);
+void display_selected_item_qty(const Item *item);
+
 #endif
