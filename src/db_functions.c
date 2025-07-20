@@ -497,11 +497,85 @@ int db_get_all_stock_additions(Stock_Addition **additions, int *count) {
     *count = row_count;
     result = D_SUCCESS;
 
+    goto cleanup;
+
     cleanup:
         if (stmt) sqlite3_finalize(stmt);
         if (result != D_SUCCESS && *additions) {
             free(*additions);
             *additions = NULL;
+            *count = 0;
+        }
+        return result;
+}
+
+int db_get_all_stock_issues(Stock_Issue **issues, int *count) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *stmt = NULL;
+    *issues = NULL;
+    *count = 0;
+    int result = D_ERROR;
+
+    char *sql = "SELECT si.id, si.item_id, i.item_code, i.item_name, "
+                "si.issued_qty, "
+                "SUM(siar.issued_qty * sa.unit_cost) AS total_cost "
+                "FROM stock_issues AS si "
+                "JOIN items AS i ON si.item_id = i.id "
+                "JOIN stock_issues_add_relation AS siar ON si.id = siar.stock_issues_id "
+                "JOIN stock_additions AS sa ON siar.stock_addition_id = sa.id "
+                "GROUP BY si.id, si.item_id, i.item_code, i.item_name, si.issued_qty "
+                "ORDER BY si.id ASC;";
+
+    if(prepare_stmt(db, sql, &stmt) == 1) {
+        goto cleanup;
+    }
+
+    int row_count = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        row_count++;
+    }
+
+    if (row_count == 0) {
+        result = D_NOT_FOUND;
+        goto cleanup;
+    }
+
+    *issues = malloc(sizeof(Stock_Issue) * row_count);
+    if (!*issues) {
+        result = D_MEMORY_ALLOC_FAILED;
+        goto cleanup;
+    }
+
+    sqlite3_reset(stmt);
+    int i = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count) {
+        Stock_Issue *issue = &(*issues)[i];
+
+        issue->issue_id = sqlite3_column_int(stmt, 0);
+        issue->item_id = sqlite3_column_int(stmt, 1);
+        
+        const unsigned char *code = sqlite3_column_text(stmt, 2);
+        const unsigned char *name = sqlite3_column_text(stmt, 3);
+        
+        snprintf(issue->item_code, sizeof(issue->item_code), "%s", code ? (const char *)code : "");
+        snprintf(issue->item_name, sizeof(issue->item_name), "%s", name ? (const char *)name : "");
+        
+        issue->issued_qty = sqlite3_column_int(stmt, 4);
+        issue->total_cost = sqlite3_column_double(stmt, 5);
+
+        i++;
+    }
+
+    *count = row_count;
+    result = D_SUCCESS;
+
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (result != D_SUCCESS && *issues) {
+            free(*issues);
+            *issues = NULL;
             *count = 0;
         }
         return result;
