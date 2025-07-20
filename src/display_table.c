@@ -2,17 +2,32 @@
 #include <stdio.h>
 #include "globals.h"
 
-//Print Header Formats
+
+
 //Item Headers
 void format_item_header(void) {
+    printf("\n%-5s %-15s %-30s\n", "Sn.", "Item Code", "Item Name");
+    printf("%-5s %-15s %-30s\n", "----", "----------", "---------");
+}
+
+
+//Item Rows
+void format_item_row(const Item *item, int index) {
+    printf("%-5d %-15s %-30s\n",
+           index + 1,
+           item->item_code,
+           item->item_name);
+}
+
+//Inventory Header
+void format_inventory_header(void) {
     printf("\n%-5s %-15s %-30s %-12s %-12s\n", "Sn.", "Item Code", "Item Name", "Current Qty", "Total Value");
     printf("%-5s %-15s %-30s %-12s %-12s\n", "----", "----------", "---------", "-----------", "-----------");
 }
 
 
-//Print Row Formats
-//Item Rows
-void format_item_row(const Item *item, int index) {
+//Inventory Row
+void format_inventory_row(const Item *item, int index) {
     printf("%-5d %-15s %-30s %-12d %-12.2f\n",
            index + 1,
            item->item_code,

@@ -3,7 +3,8 @@
 
 #include "sqlite3.h"
 #include "globals.h"
-
+void format_inventory_header(void);
+void format_inventory_row(const Item *item, int index);
 void format_item_header(void);
 void format_item_row(const Item *item, int index);
 void display_item_table(Item *items, int count, void (*print_header)(void), void (*print_row)(const Item *, int));

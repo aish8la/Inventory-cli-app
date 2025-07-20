@@ -184,7 +184,7 @@ int view_inventory(void) {
     } else if (result != D_SUCCESS) {
         printf("\nDatabase Error\n\n");
     } else {
-        display_item_table(items, count, format_item_header, format_item_row);
+        display_item_table(items, count, format_inventory_header, format_inventory_row);
     }
 
     if (items) free(items);
