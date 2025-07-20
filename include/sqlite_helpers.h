@@ -3,15 +3,11 @@
 
 #include "sqlite3.h"
 
-
 int run_sql(sqlite3 *db, const char *sql);
 
-int run_sql_with_cb(
-    sqlite3 *db,
-    const char *sql,
-    int (*callback)(void*,int,char**,char**),
-    void *cbdata
-);
+int run_sql_with_cb(sqlite3 *db, const char *sql,
+                    int (*callback)(void *, int, char **, char **),
+                    void *cbdata);
 
 int prepare_stmt(sqlite3 *db, char *sql, sqlite3_stmt **stmt);
 
