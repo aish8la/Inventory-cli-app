@@ -1,5 +1,12 @@
 # CIV-IT-Final-Project
 
+
+# Amalgamation
+The amalgamation/ folder contains the same codebase as the main project, but all source (.c) and header (.h) files have been combined into a single file for simplified compilation. This version also includes the SQLite amalgamation source, making it easy to compile without managing multiple files.
+
+In contrast, the main src/ and include/ folders hold the modular version of the code, where functionality is separated into logically organized files. This modular layout is recommended for reading, understanding, and maintaining the code.
+
+
 ## Inventory Management System (C CLI App)
 
 This is a modular C language CLI application for inventory management. It uses:
