@@ -11,6 +11,8 @@ void display_item_table(Item *items, int count, void (*print_header)(void), void
 
 void display_selected_item(const Item *item);
 void display_selected_item_qty(const Item *item);
+void display_selected_addition(const Stock_Addition *addition);
+void display_selected_stock_issue(const Stock_Issue *issue);
 
 void format_additions_header(void);
 void format_additions_row(const Stock_Addition *addition, int index);

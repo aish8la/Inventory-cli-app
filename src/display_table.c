@@ -62,6 +62,25 @@ void display_selected_item_qty(const Item *item) {
     printf("Code: [%s]\nName: [%s]\nAvailable Qty: [%d]\n\n", item->item_code, item->item_name, item->current_qty);
 }
 
+void display_selected_addition(const Stock_Addition *addition) {
+    printf("Addition ID   : [%d]\n", addition->addition_id);
+    printf("Item Code     : [%s]\n", addition->item_code);
+    printf("Item Name     : [%s]\n", addition->item_name);
+    printf("Added Qty     : [%d]\n", addition->added_qty);
+    printf("Unit Cost     : [%.2f]\n", addition->unit_cost);
+    printf("Unused Qty    : [%d]\n", addition->unused_qty);
+    printf("Total Cost    : [%.2f]\n\n", addition->total_cost);
+}
+
+void display_selected_stock_issue(const Stock_Issue *issue) {
+    printf("Issue ID      : [%d]\n", issue->issue_id);
+    printf("Item Code     : [%s]\n", issue->item_code);
+    printf("Item Name     : [%s]\n", issue->item_name);
+    printf("Issued Qty    : [%d]\n", issue->issued_qty);
+    printf("Total Cost    : [%.2f]\n\n", issue->total_cost);
+}
+
+
 
 //Print Header Formats
 //Additions Headers
