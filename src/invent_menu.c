@@ -246,6 +246,45 @@ int delete_stock_addition(void) {
 }
 
 int delete_stock_issue(void) {
-    wait_for_enter();
-    return 0;
+    int issue_id;
+    Stock_Issue issue;
+
+    printf("Enter Stock Issue ID to Delete: ");
+    scanf("%d", &issue_id);
+    clear_input_buffer();
+
+    // Check if issue exists and display
+    int result = db_get_stock_issue_by_id(issue_id, &issue);
+    if(result != D_SUCCESS) {
+        printf("Stock Issue with ID '%d' not found.\n", issue_id);
+        goto cleanup;
+    }
+
+    printf("\nStock Issue Selected for Delete Operation\n");
+    display_selected_stock_issue(&issue);
+
+    // Prompt user for confirmation
+    char *prompt = "\nConfirm Delete Operation ?\n";
+    char *cancel_msg = "\nCancelled Delete Operation.\n";
+
+    if(get_user_confirmation(prompt, cancel_msg) != 0) {
+        goto cleanup;
+    }
+
+    // Perform the delete operation
+    result = db_delete_stock_issue(issue_id);
+    switch (result) {
+        case D_SUCCESS:
+            printf("Stock Issue [%d] Deleted Successfully", issue_id);
+            break;
+        default:
+            printf("Error deleting stock issue");
+            break;
+    }
+
+    goto cleanup;
+
+    cleanup:
+        wait_for_enter();
+        return 0;
 }
