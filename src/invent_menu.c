@@ -26,7 +26,7 @@ int add_stock(void) {
 
     printf("\nItem to Add Stock\n");
 
-    printf("Code: [%s]\nName: [%s]\n\n", item.item_code, item.item_name);
+    display_selected_item(&item);
 
     printf("\nEnter the Stock Addition Details;\n\n");
 
@@ -76,7 +76,7 @@ int issue_stock(void) {
 
     printf("\nItem to Issue Stock\n");
 
-    printf("Code: [%s]\nName: [%s]\nAvailable Qty: [%d]\n\n", item.item_code, item.item_name, item.current_qty);
+    display_selected_item_qty(&item);
 
     if(item.current_qty <= 0) {
         printf("\nSelected Item has no stock. Add Stock before Issue.\n");
