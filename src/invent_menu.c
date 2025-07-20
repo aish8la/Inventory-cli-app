@@ -193,8 +193,56 @@ int view_inventory(void) {
 }
 
 int delete_stock_addition(void) {
-    wait_for_enter();
-    return 0;
+    int addition_id;
+    Stock_Addition addition;
+
+    printf("Enter Stock Addition ID to Delete: ");
+    scanf("%d", &addition_id);
+    clear_input_buffer();
+
+    // Check if addition exists and display
+    int result = db_get_stock_addition_by_id(addition_id, &addition);
+    if(result != D_SUCCESS) {
+        printf("Stock Addition with ID '%d' not found.\n", addition_id);
+        goto cleanup;
+    }
+
+    printf("\nAddition Selected for Deletion\n");
+    display_selected_addition(&addition);
+
+    // Check if any quantity has been used
+    if(addition.unused_qty != addition.added_qty) {
+        printf("\nWARNING: This addition has been used. Cannot Delete.\n");
+        goto cleanup;
+    }
+
+    // Prompt user for confirmation
+    char *prompt = "\nConfirm Delete Operation ?\n";
+    char *cancel_msg = "\nCancelled Delete Operation.\n";
+
+    if(get_user_confirmation(prompt, cancel_msg) != 0) {
+        goto cleanup;
+    }
+
+    // Perform the delete operation
+    result = db_delete_stock_addition(addition);
+    switch (result) {
+        case D_SUCCESS:
+            printf("Stock Addition [%d] Deleted Successfully", addition_id);
+            break;
+        case D_FOREIGNKEY_VIOLATION:
+            printf("This stock addition has been used in stock issues and cannot be deleted.");
+            break;
+        default:
+            printf("Error deleting stock addition");
+            break;
+    }
+
+    goto cleanup;
+
+    cleanup:
+        wait_for_enter();
+        return 0;
 }
 
 int delete_stock_issue(void) {
