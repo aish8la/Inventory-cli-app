@@ -141,6 +141,8 @@ int invent_menu(void) {
         {"View Stock Additions", view_additions, 1},
         {"View Issues", view_issues, 1},
         {"View Inventory", view_inventory, 1},
+        {"Delete Stock Addition Entry", delete_stock_addition, 3},
+        {"Delete Stock Issue Entry", delete_stock_issue, 3}
     };
 
     int menu_count = sizeof(invent_menu) / sizeof(invent_menu[0]);
