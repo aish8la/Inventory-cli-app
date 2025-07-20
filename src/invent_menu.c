@@ -191,3 +191,13 @@ int view_inventory(void) {
     wait_for_enter();
     return 0;
 }
+
+int delete_stock_addition(void) {
+    wait_for_enter();
+    return 0;
+}
+
+int delete_stock_issue(void) {
+    wait_for_enter();
+    return 0;
+}

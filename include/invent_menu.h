@@ -6,5 +6,7 @@ int issue_stock(void);
 int view_additions(void);
 int view_issues(void);
 int view_inventory(void);
+int delete_stock_addition(void);
+int delete_stock_issue(void);
 
 #endif
