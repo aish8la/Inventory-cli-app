@@ -196,6 +196,8 @@ int delete_stock_addition(void) {
     int addition_id;
     Stock_Addition addition;
 
+    printf("\n====WARNING!! DELETING STOCK ADDITIONS COULD RESULT IN INCORRECT FIFO ALLOCATION!!====\n");
+
     printf("Enter Stock Addition ID to Delete: ");
     scanf("%d", &addition_id);
     clear_input_buffer();
@@ -248,6 +250,8 @@ int delete_stock_addition(void) {
 int delete_stock_issue(void) {
     int issue_id;
     Stock_Issue issue;
+
+    printf("\n====WARNING!! DELETING STOCK ISSUES COULD RESULT IN INCORRECT FIFO ALLOCATION!!====\n");
 
     printf("Enter Stock Issue ID to Delete: ");
     scanf("%d", &issue_id);
