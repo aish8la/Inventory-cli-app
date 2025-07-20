@@ -27,5 +27,6 @@ int db_add_stock(int item_id, int qty, double unit_cost);
 int db_issue_stock(Item item, int issue_qty);
 int db_get_all_stock_additions(Stock_Addition **additions, int *count);
 int db_get_all_stock_issues(Stock_Issue **issues, int *count);
+int db_get_stock_addition_by_id(int addition_id, Stock_Addition *addition);
 
 #endif

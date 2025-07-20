@@ -580,3 +580,110 @@ int db_get_all_stock_issues(Stock_Issue **issues, int *count) {
         }
         return result;
 }
+
+int db_get_stock_addition_by_id(int addition_id, Stock_Addition *addition) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *stmt = NULL;
+    int result = D_ERROR;
+
+    char *sql = "SELECT sa.id, sa.item_id, i.item_code, i.item_name, "
+                "sa.added_qty, sa.unit_cost, sa.unused_qty, "
+                "(sa.added_qty * sa.unit_cost) AS total_cost "
+                "FROM stock_additions AS sa "
+                "JOIN items AS i ON sa.item_id = i.id "
+                "WHERE sa.id = ?;";
+
+    if(prepare_stmt(db, sql, &stmt) != 0) {
+        goto cleanup;
+    }
+
+    sqlite3_bind_int(stmt, 1, addition_id);
+
+    int rc = sqlite3_step(stmt);
+    if(rc == SQLITE_ROW) {
+        addition->addition_id = sqlite3_column_int(stmt, 0);
+        addition->item_id = sqlite3_column_int(stmt, 1);
+        
+        const unsigned char *code = sqlite3_column_text(stmt, 2);
+        const unsigned char *name = sqlite3_column_text(stmt, 3);
+        
+        snprintf(addition->item_code, sizeof(addition->item_code), "%s", code ? (const char *)code : "");
+        snprintf(addition->item_name, sizeof(addition->item_name), "%s", name ? (const char *)name : "");
+        
+        addition->added_qty = sqlite3_column_int(stmt, 4);
+        addition->unit_cost = sqlite3_column_double(stmt, 5);
+        addition->unused_qty = sqlite3_column_int(stmt, 6);
+        addition->total_cost = sqlite3_column_double(stmt, 7);
+        
+        result = D_SUCCESS;
+    } else if (rc == SQLITE_DONE) {
+        result = D_NOT_FOUND;
+    }
+
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        return result;
+}
+
+int db_delete_stock_addition(Stock_Addition addition) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *delete_stmt = NULL;
+    sqlite3_stmt *update_stmt = NULL;
+    int result = D_ERROR;
+
+    if(begin_txn(db) != 0) {
+        goto cleanup;
+    }
+
+    // Delete the stock addition
+    char *delete_sql = "DELETE FROM stock_additions WHERE id = ?;";
+
+    if(prepare_stmt(db, delete_sql, &delete_stmt) != 0) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(delete_stmt, 1, addition.addition_id);
+
+    if(step_and_check(db, delete_stmt, 0) != 0) {
+        if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY) {
+            result = D_FOREIGNKEY_VIOLATION;
+        }
+        goto cleanup;
+    }
+
+    // Update the item's quantity and value
+    char *update_sql = "UPDATE items "
+                       "SET current_qty = current_qty - ?, "
+                       "total_value = total_value - ? "
+                       "WHERE id = ?;";
+
+    if(prepare_stmt(db, update_sql, &update_stmt) != 0) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(update_stmt, 1, addition.added_qty);
+    sqlite3_bind_double(update_stmt, 2, addition.added_qty * addition.unit_cost);
+    sqlite3_bind_int(update_stmt, 3, addition.item_id);
+
+    if(step_and_check(db, update_stmt, 0) != 0) {
+        goto txn_error;
+    }
+
+    if(commit_txn(db) != 0) {
+        goto txn_error;
+    }
+
+    result = D_SUCCESS;
+    goto cleanup;
+
+    txn_error:
+        rollback_txn(db);
+        goto cleanup;
+
+    cleanup:
+        if (delete_stmt) sqlite3_finalize(delete_stmt);
+        if (update_stmt) sqlite3_finalize(update_stmt);
+        return result;
+}
