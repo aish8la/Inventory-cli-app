@@ -29,5 +29,7 @@ int db_get_all_stock_additions(Stock_Addition **additions, int *count);
 int db_get_all_stock_issues(Stock_Issue **issues, int *count);
 int db_get_stock_addition_by_id(int addition_id, Stock_Addition *addition);
 int db_delete_stock_addition(Stock_Addition addition);
+int db_get_stock_issue_by_id(int issue_id, Stock_Issue *issue);
+int db_delete_stock_issue(Stock_Issue issue);
 
 #endif
