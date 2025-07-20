@@ -8,14 +8,6 @@
 #include "item_menu.h"
 #include "invent_menu.h"
 
-
-
-/*These are prototypes of the main menu items. function definitions are below*/
-int invent_menu(void);
-int item_menu(void);
-int setting_menu(void);
-
-
 //This function will return a filtered list of menu items and is a helper for the run_menu function
 //It accepts the original menu list, the count for the list and a pointer to the returned list count variable
 //this will use a dynamically allocated memory so free the memory with free() after the finishing
