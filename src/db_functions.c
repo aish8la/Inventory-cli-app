@@ -148,7 +148,7 @@ int db_delete_item(const char *item_code) {
     int result = D_ERROR;
 
     char *delete_sql = "DELETE FROM items "
-                "WHERE id = ?;";
+                "WHERE item_code = ?;";
 
 
     if(prepare_stmt(db, delete_sql, &stmt) == 1) {
