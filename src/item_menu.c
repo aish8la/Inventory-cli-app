@@ -8,72 +8,51 @@
 #include "display_table.h"
 #include "globals.h"
 #include "init_db.h"
+#include "db_functions.h"
 
 
 int add_item(void) {
-
-    sqlite3 *db = get_db();
-    sqlite3_stmt *stmt = NULL;
-
-    char item_code[ITEM_CODE_LENGTH];
-    char item_name[ITEM_NAME_LENGTH];
-
-    //The ? are binding parameters to whom, values will be bound to using sqlite3_bind* functions
-    char *sql = "INSERT INTO items (item_code, item_name) "
-                "VALUES (?, ?);";
-
-
-    /*Prepare statement is where the sql statement is translated into byte code for the statement to be run 
-    (this is wrapper function that will run the sqlite3_prepare_v2 and also handle errors)*/
-    if(prepare_stmt(db, sql, &stmt) == 1) {
-        goto cleanup;
-    }
+    char item_code[ITEM_CODE_LENGTH + 1];
+    char item_name[ITEM_NAME_LENGTH + 1];
 
     while(1) {
 
-    clear_console();
+        clear_console();
 
+        printf("Enter Item Code (Must be Unique): ");
+        read_input(item_code, sizeof(item_code));
 
-    printf("Enter Item Code (Must be Unique): ");
-    read_input(item_code, sizeof(item_code));
+        printf("Enter Item Name: ");
+        read_input(item_name, sizeof(item_name));
 
-    printf("Enter Item Name: ");
-    read_input(item_name, sizeof(item_name));
-
-    if(item_code[0] == '\0' || item_name[0] == '\0') {
-        printf("Value Cannot be Blank");
-        goto cleanup;
-    }
-
-    //This is where the values from the variables are bound to the sql statement bind parameters as mentioned above
-    sqlite3_bind_text(stmt, 1, item_code, -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt, 2, item_name, -1, SQLITE_TRANSIENT);
-
-    //sqlite3_step is used to execute the insert using the prepared statement
-    if(step_and_check(db, stmt, 0) != 0) {
-        if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_UNIQUE) {
-            printf("Item code already exists. Please use a unique code.\n");
+        if(item_code[0] == '\0' || item_name[0] == '\0') {
+            printf("Value Cannot be Blank");
+            goto cleanup;
         }
-        goto cleanup;
-    }
 
-    sqlite3_reset(stmt);
+        //Perform Database operation
+        int result = db_add_item(item_code, item_name);
+        if(result == D_SUCCESS) {
+            printf("\nAdded New Item [%s] Successfully.\n", item_code);
+        } else if(result == D_UNIQUE_CONSTRAINT_VIOLATION) {
+            printf("Item code already exists. Please use a unique code.\n");
+            goto cleanup;
+        } else {
+            printf("Error adding item.\n");
+            goto cleanup;
+        }
+        
+        const char *add_another_msg = "\nWould you like to add another item ?";
+        const char *cancel_msg = "\nDone Adding Items.";
 
-    printf("\nAdded New Item [%s] Successfully.\n", item_code);
-
-    const char *add_another_msg = "\nWould you like to add another item ?";
-    const char *cancel_msg = "\nDone Adding Items.";
-
-    if(get_user_confirmation(add_another_msg, cancel_msg) != 0) {
-        break;
-    }
-
+        if(get_user_confirmation(add_another_msg, cancel_msg) != 0) {
+            break;
+        }
     }
 
     goto cleanup;
 
     cleanup:
-        if (stmt) sqlite3_finalize(stmt);
         wait_for_enter();
         return 0;
 }

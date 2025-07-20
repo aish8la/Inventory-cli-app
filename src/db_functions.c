@@ -4,6 +4,47 @@
 #include "sqlite_helpers.h"
 #include "init_db.h"
 
+//Item Menu DB Functions
+int db_add_item(const char *item_code, const char *item_name) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *stmt = NULL;
+    int result = D_ERROR;
+
+    //The ? are binding parameters to whom, values will be bound to using sqlite3_bind* functions
+    char *sql = "INSERT INTO items (item_code, item_name) "
+                "VALUES (?, ?);";
+
+
+    /*Prepare statement is where the sql statement is translated into byte code for the statement to be run 
+    (this is wrapper function that will run the sqlite3_prepare_v2 and also handle errors)*/
+    if(prepare_stmt(db, sql, &stmt) == 1) {
+        goto cleanup;
+    }
+
+    //This is where the values from the variables are bound to the sql statement bind parameters as mentioned above
+    sqlite3_bind_text(stmt, 1, item_code, -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, item_name, -1, SQLITE_TRANSIENT);
+
+    //sqlite3_step is used to execute the insert using the prepared statement
+    if(step_and_check(db, stmt, 0) != 0) {
+        if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_UNIQUE) {
+            result = D_UNIQUE_CONSTRAINT_VIOLATION;
+        }
+        goto cleanup;
+    }
+
+    result = D_SUCCESS;
+
+
+    goto cleanup;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        return result;
+}
+
+
+//Inventory Menu DB Functions
 int db_get_item_by_code(const char *input_item_code, Item *item) {
     sqlite3 *db = get_db();
     sqlite3_stmt *search_stmt = NULL;
