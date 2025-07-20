@@ -25,5 +25,6 @@ int db_delete_item(const char *item_code);
 //Inventory Functions
 int db_add_stock(int item_id, int qty, double unit_cost);
 int db_issue_stock(Item item, int issue_qty);
+int db_get_all_stock_additions(Stock_Addition **additions, int *count);
 
 #endif

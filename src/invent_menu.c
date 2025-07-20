@@ -123,6 +123,27 @@ int issue_stock(void) {
 }
 
 int view_additions(void) {
+    Stock_Addition *additions = NULL;
+    int count = 0;
+
+    int result = db_get_all_stock_additions(&additions, &count);
+
+    switch (result) {
+        case D_SUCCESS:
+            display_additions_table(additions, count, format_additions_header, format_additions_row);
+            break;
+        case D_NOT_FOUND:
+            printf("\nNo stock additions found.\n");
+            break;
+        default:
+            printf("\nError retrieving stock additions.\n");
+            break;
+    }
+
+    if (additions) {
+        free(additions);
+    }
+
     wait_for_enter();
     return 0;
 }

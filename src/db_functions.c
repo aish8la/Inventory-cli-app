@@ -437,3 +437,72 @@ int db_issue_stock(Item item, int issue_qty) {
         if (update_add_stmt) sqlite3_finalize(update_add_stmt);
         return result;
 }
+
+int db_get_all_stock_additions(Stock_Addition **additions, int *count) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *stmt = NULL;
+    *additions = NULL;
+    *count = 0;
+    int result = D_ERROR;
+
+    char *sql = "SELECT sa.id, sa.item_id, i.item_code, i.item_name, "
+                "sa.added_qty, sa.unit_cost, sa.unused_qty, "
+                "(sa.added_qty * sa.unit_cost) AS total_cost "
+                "FROM stock_additions AS sa "
+                "JOIN items AS i ON sa.item_id = i.id "
+                "ORDER BY sa.id ASC;";
+
+    if(prepare_stmt(db, sql, &stmt) != 0) {
+        goto cleanup;
+    }
+
+    int row_count = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        row_count++;
+    }
+
+    if (row_count == 0) {
+        result = D_NOT_FOUND;
+        goto cleanup;
+    }
+
+    *additions = malloc(sizeof(Stock_Addition) * row_count);
+    if (!*additions) {
+        result = D_MEMORY_ALLOC_FAILED;
+        goto cleanup;
+    }
+
+    sqlite3_reset(stmt);
+    int i = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count) {
+        Stock_Addition *addition = &(*additions)[i];
+
+        addition->addition_id = sqlite3_column_int(stmt, 0);
+        addition->item_id = sqlite3_column_int(stmt, 1);
+        
+        const unsigned char *code = sqlite3_column_text(stmt, 2);
+        const unsigned char *name = sqlite3_column_text(stmt, 3);
+        
+        snprintf(addition->item_code, sizeof(addition->item_code), "%s", code ? (const char *)code : "");
+        snprintf(addition->item_name, sizeof(addition->item_name), "%s", name ? (const char *)name : "");
+        
+        addition->added_qty = sqlite3_column_int(stmt, 4);
+        addition->unit_cost = sqlite3_column_double(stmt, 5);
+        addition->unused_qty = sqlite3_column_int(stmt, 6);
+        addition->total_cost = sqlite3_column_double(stmt, 7);
+
+        i++;
+    }
+
+    *count = row_count;
+    result = D_SUCCESS;
+
+    cleanup:
+        if (stmt) sqlite3_finalize(stmt);
+        if (result != D_SUCCESS && *additions) {
+            free(*additions);
+            *additions = NULL;
+            *count = 0;
+        }
+        return result;
+}
