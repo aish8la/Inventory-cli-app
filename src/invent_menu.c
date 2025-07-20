@@ -175,6 +175,19 @@ int view_issues(void) {
 }
 
 int view_inventory(void) {
+    Item *items = NULL;
+    int count = 0;
+
+    int result = db_get_all_items(&items, &count);
+    if(result == D_NOT_FOUND) {
+        printf("No items found in Inventory.\n");
+    } else if (result != D_SUCCESS) {
+        printf("\nDatabase Error\n\n");
+    } else {
+        display_item_table(items, count, format_item_header, format_item_row);
+    }
+
+    if (items) free(items);
     wait_for_enter();
     return 0;
 }
