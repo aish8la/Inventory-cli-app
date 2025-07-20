@@ -650,7 +650,7 @@ int db_delete_stock_addition(Stock_Addition addition) {
         if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY) {
             result = D_FOREIGNKEY_VIOLATION;
         }
-        goto cleanup;
+        goto txn_error;
     }
 
     // Update the item's quantity and value
@@ -732,5 +732,119 @@ int db_get_stock_issue_by_id(int issue_id, Stock_Issue *issue) {
 
     cleanup:
         if (stmt) sqlite3_finalize(stmt);
+        return result;
+}
+
+
+int db_delete_stock_issue(Stock_Issue issue) {
+    sqlite3 *db = get_db();
+    sqlite3_stmt *get_relations_stmt = NULL;
+    sqlite3_stmt *delete_relations_stmt = NULL;
+    sqlite3_stmt *delete_issue_stmt = NULL;
+    sqlite3_stmt *update_additions_stmt = NULL;
+    sqlite3_stmt *update_item_stmt = NULL;
+    int result = D_ERROR;
+
+    if(begin_txn(db) != 0) {
+        goto cleanup;
+    }
+
+    // Get all relations for this issue to restore used quantities
+    char *get_relations_sql = "SELECT stock_addition_id, issued_qty "
+                              "FROM stock_issues_add_relation "
+                              "WHERE stock_issues_id = ?;";
+
+    if(prepare_stmt(db, get_relations_sql, &get_relations_stmt) != 0) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(get_relations_stmt, 1, issue.issue_id);
+
+    // Prepare statement to restore used quantities
+    char *update_additions_sql = "UPDATE stock_additions "
+                                 "SET unused_qty = unused_qty + ? "
+                                 "WHERE id = ?;";
+
+    if(prepare_stmt(db, update_additions_sql, &update_additions_stmt) != 0) {
+        goto txn_error;
+    }
+
+    // Process each relation to restore unused quantities
+    while(sqlite3_step(get_relations_stmt) == SQLITE_ROW) {
+        int addition_id = sqlite3_column_int(get_relations_stmt, 0);
+        int issued_qty = sqlite3_column_int(get_relations_stmt, 1);
+
+        sqlite3_bind_int(update_additions_stmt, 1, issued_qty);
+        sqlite3_bind_int(update_additions_stmt, 2, addition_id);
+
+        if(step_and_check(db, update_additions_stmt, 0) != 0) {
+            goto txn_error;
+        }
+
+        sqlite3_reset(update_additions_stmt);
+    }
+
+    // Delete all relations for this issue
+    char *delete_relations_sql = "DELETE FROM stock_issues_add_relation "
+                                 "WHERE stock_issues_id = ?;";
+
+    if(prepare_stmt(db, delete_relations_sql, &delete_relations_stmt) != 0) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(delete_relations_stmt, 1, issue.issue_id);
+
+    if(step_and_check(db, delete_relations_stmt, 0) != 0) {
+        goto txn_error;
+    }
+
+    // Delete the stock issue
+    char *delete_issue_sql = "DELETE FROM stock_issues WHERE id = ?;";
+
+    if(prepare_stmt(db, delete_issue_sql, &delete_issue_stmt) != 0) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(delete_issue_stmt, 1, issue.issue_id);
+
+    if(step_and_check(db, delete_issue_stmt, 0) != 0) {
+        goto txn_error;
+    }
+
+    // Update the item's quantity and value
+    char *update_item_sql = "UPDATE items "
+                            "SET current_qty = current_qty + ?, "
+                            "total_value = total_value + ? "
+                            "WHERE id = ?;";
+
+    if(prepare_stmt(db, update_item_sql, &update_item_stmt) != 0) {
+        goto txn_error;
+    }
+
+    sqlite3_bind_int(update_item_stmt, 1, issue.issued_qty);
+    sqlite3_bind_double(update_item_stmt, 2, issue.total_cost);
+    sqlite3_bind_int(update_item_stmt, 3, issue.item_id);
+
+    if(step_and_check(db, update_item_stmt, 0) != 0) {
+        goto txn_error;
+    }
+
+    if(commit_txn(db) != 0) {
+        goto txn_error;
+    }
+
+    result = D_SUCCESS;
+    goto cleanup;
+
+    txn_error:
+        rollback_txn(db);
+        goto cleanup;
+
+    cleanup:
+        if (get_relations_stmt) sqlite3_finalize(get_relations_stmt);
+        if (delete_relations_stmt) sqlite3_finalize(delete_relations_stmt);
+        if (delete_issue_stmt) sqlite3_finalize(delete_issue_stmt);
+        if (update_additions_stmt) sqlite3_finalize(update_additions_stmt);
+        if (update_item_stmt) sqlite3_finalize(update_item_stmt);
         return result;
 }
