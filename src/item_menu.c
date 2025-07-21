@@ -18,10 +18,10 @@ int add_item(void) {
 
     clear_console();
 
-    printf("Enter Item Code (Must be Unique): ");
+    printf("Enter Item Code (Must be Unique) [Max: %d characters]: ", ITEM_CODE_LENGTH);
     read_input(item_code, sizeof(item_code));
 
-    printf("Enter Item Name: ");
+    printf("Enter Item Name [Max: %d characters]: ", ITEM_NAME_LENGTH);
     read_input(item_name, sizeof(item_name));
 
     if (item_code[0] == '\0' || item_name[0] == '\0') {
@@ -77,10 +77,10 @@ int view_items(void) {
 }
 
 int search_item(void) {
-  char input_itm_code[ITEM_CODE_LENGTH];
+  char input_itm_code[ITEM_CODE_LENGTH + 1];
   Item item;
 
-  printf("Enter Item Code of Item to Search: ");
+  printf("Enter Item Code of Item to Search [Max: %d characters]: ", ITEM_CODE_LENGTH);
   read_input(input_itm_code, sizeof(input_itm_code));
 
   int result = db_get_item_by_code(input_itm_code, &item);
@@ -106,7 +106,7 @@ int edit_item(void) {
   Item item;
 
   // Check if Item Exists and displays it
-  printf("Enter Item Code of Item to edit: ");
+  printf("Enter Item Code of Item to edit [Max: %d characters]: ", ITEM_CODE_LENGTH);
   read_input(input_itm_code, sizeof(input_itm_code));
 
   int result = db_get_item_by_code(input_itm_code, &item);
@@ -120,10 +120,10 @@ int edit_item(void) {
 
   printf("\nEnter Updated Item Details;\n\n");
 
-  printf("Enter Updated Item Code: ");
+  printf("Enter Updated Item Code [Max: %d characters]: ", ITEM_CODE_LENGTH);
   read_input(new_itm_code, sizeof(new_itm_code));
 
-  printf("Enter Updated Item Name: ");
+  printf("Enter Updated Item Name [Max: %d characters]: ", ITEM_NAME_LENGTH);
   read_input(new_itm_name, sizeof(new_itm_name));
 
   if (new_itm_code[0] == '\0' || new_itm_name[0] == '\0') {
@@ -159,7 +159,7 @@ int delete_item(void) {
   char input_itm_code[ITEM_CODE_LENGTH + 1];
   Item item;
 
-  printf("Enter Item Code of Item to Delete: ");
+  printf("Enter Item Code of Item to Delete [Max: %d characters]: ", ITEM_CODE_LENGTH);
   read_input(input_itm_code, sizeof(input_itm_code));
 
   // Check if Item exist and display

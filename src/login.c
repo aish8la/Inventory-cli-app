@@ -32,13 +32,13 @@ int login(void) {
 
   fclose(fp);
 
-  char input_user_name[MAX_USER_NAME_LENGTH];
-  char input_user_pass[MAX_USER_PASSWORD_LENGTH];
+  char input_user_name[MAX_USER_NAME_LENGTH + 1];
+  char input_user_pass[MAX_USER_PASSWORD_LENGTH + 1];
 
-  printf("Enter User Name: ");
+  printf("Enter User Name [Max: %d characters]: ", MAX_USER_NAME_LENGTH);
   read_input(input_user_name, sizeof(input_user_name));
 
-  printf("Enter Password: ");
+  printf("Enter Password [Max: %d characters]: ", MAX_USER_PASSWORD_LENGTH);
   read_input(input_user_pass, sizeof(input_user_pass));
 
   for (int i = 0; i < user_data.user_count; i++) {

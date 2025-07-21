@@ -1646,7 +1646,7 @@ int view_items(void) {
 }
 
 int search_item(void) {
-    char input_itm_code[ITEM_CODE_LENGTH];
+    char input_itm_code[ITEM_CODE_LENGTH + 1];
     Item item;
     
     printf("Enter Item Code of Item to Search: ");
@@ -1772,7 +1772,7 @@ int delete_item(void) {
 // ----- invent_menu.c -----
 #include <stdio.h>
 int add_stock(void) {
-    char input_itm_code[ITEM_CODE_LENGTH];
+    char input_itm_code[ITEM_CODE_LENGTH + 1];
     int qty;
     double unit_cost;
     Item item;

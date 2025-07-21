@@ -10,12 +10,12 @@
 #include <stdio.h>
 
 int add_stock(void) {
-  char input_itm_code[ITEM_CODE_LENGTH];
+  char input_itm_code[ITEM_CODE_LENGTH + 1];
   int qty;
   double unit_cost;
   Item item;
 
-  printf("Enter Item Code of Item: ");
+  printf("Enter Item Code of Item [Max: %d characters]: ", ITEM_CODE_LENGTH);
   read_input(input_itm_code, sizeof(input_itm_code));
 
   int result = db_get_item_by_code(input_itm_code, &item);
@@ -65,7 +65,7 @@ int issue_stock(void) {
   int issue_qty;
   Item item;
 
-  printf("Enter Item Code of Item: ");
+  printf("Enter Item Code of Item [Max: %d characters]: ", ITEM_CODE_LENGTH);
   read_input(input_itm_code, sizeof(input_itm_code));
 
   int result = db_get_item_by_code(input_itm_code, &item);
