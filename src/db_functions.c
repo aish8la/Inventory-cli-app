@@ -7,7 +7,8 @@
 #include <stdio.h>
 
 // Item Menu DB Functions
-int db_add_item(const char *item_code, const char *item_name) {
+int db_add_item(const char *item_code, const char *item_name)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *stmt = NULL;
   int result = D_ERROR;
@@ -20,7 +21,8 @@ int db_add_item(const char *item_code, const char *item_name) {
   /*Prepare statement is where the sql statement is translated into byte code
   for the statement to be run (this is wrapper function that will run the
   sqlite3_prepare_v2 and also handle errors)*/
-  if (prepare_stmt(db, sql, &stmt) == 1) {
+  if (prepare_stmt(db, sql, &stmt) == 1)
+  {
     goto cleanup;
   }
 
@@ -30,8 +32,10 @@ int db_add_item(const char *item_code, const char *item_name) {
   sqlite3_bind_text(stmt, 2, item_name, -1, SQLITE_TRANSIENT);
 
   // sqlite3_step is used to execute the insert using the prepared statement
-  if (step_and_check(db, stmt, 0) != 0) {
-    if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_UNIQUE) {
+  if (step_and_check(db, stmt, 0) != 0)
+  {
+    if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_UNIQUE)
+    {
       result = D_UNIQUE_CONSTRAINT_VIOLATION;
     }
     goto cleanup;
@@ -47,7 +51,8 @@ cleanup:
   return result;
 }
 
-int db_get_all_items(Item **items, int *count) {
+int db_get_all_items(Item **items, int *count)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *stmt = NULL;
   *items = NULL;
@@ -57,30 +62,35 @@ int db_get_all_items(Item **items, int *count) {
   char *sql = "SELECT id, item_code, item_name, current_qty, total_value "
               "FROM items;";
 
-  if (prepare_stmt(db, sql, &stmt) == 1) {
+  if (prepare_stmt(db, sql, &stmt) == 1)
+  {
     goto cleanup;
   }
 
   int row_count = 0;
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
     row_count++;
   }
 
-  if (row_count == 0) {
+  if (row_count == 0)
+  {
     result = D_NOT_FOUND;
     goto cleanup;
   }
 
   // Allocate memory
   *items = malloc(sizeof(Item) * row_count);
-  if (!*items) {
+  if (!*items)
+  {
     result = D_MEMORY_ALLOC_FAILED;
     goto cleanup;
   }
 
   sqlite3_reset(stmt);
   int i = 0;
-  while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count) {
+  while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count)
+  {
     Item *item =
         &(*items)[i]; // Dereferences the pointer to the array, gets the i-th
                       // Item and passes the memory address of that to the *item
@@ -109,7 +119,8 @@ int db_get_all_items(Item **items, int *count) {
 cleanup:
   if (stmt)
     sqlite3_finalize(stmt);
-  if (result != D_SUCCESS && *items) {
+  if (result != D_SUCCESS && *items)
+  {
     free(*items);
     *items = NULL;
     *count = 0;
@@ -118,7 +129,8 @@ cleanup:
 }
 
 int db_update_item(const char *old_item_code, const char *new_item_code,
-                   const char *new_item_name) {
+                   const char *new_item_name)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *stmt = NULL;
   int result = D_ERROR;
@@ -126,7 +138,8 @@ int db_update_item(const char *old_item_code, const char *new_item_code,
   char *edit_sql = "UPDATE items SET item_code = ?, item_name = ? "
                    "WHERE item_code = ?;";
 
-  if (prepare_stmt(db, edit_sql, &stmt) != 0) {
+  if (prepare_stmt(db, edit_sql, &stmt) != 0)
+  {
     goto cleanup;
   }
 
@@ -134,8 +147,10 @@ int db_update_item(const char *old_item_code, const char *new_item_code,
   sqlite3_bind_text(stmt, 2, new_item_name, -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 3, old_item_code, -1, SQLITE_TRANSIENT);
 
-  if (step_and_check(db, stmt, 0) != 0) {
-    if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_UNIQUE) {
+  if (step_and_check(db, stmt, 0) != 0)
+  {
+    if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_UNIQUE)
+    {
       result = D_UNIQUE_CONSTRAINT_VIOLATION;
     }
     goto cleanup;
@@ -151,7 +166,8 @@ cleanup:
   return result;
 }
 
-int db_delete_item(const char *item_code) {
+int db_delete_item(const char *item_code)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *stmt = NULL;
   int result = D_ERROR;
@@ -159,14 +175,17 @@ int db_delete_item(const char *item_code) {
   char *delete_sql = "DELETE FROM items "
                      "WHERE item_code = ?;";
 
-  if (prepare_stmt(db, delete_sql, &stmt) == 1) {
+  if (prepare_stmt(db, delete_sql, &stmt) == 1)
+  {
     goto cleanup;
   }
 
   sqlite3_bind_text(stmt, 1, item_code, -1, SQLITE_TRANSIENT);
 
-  if (step_and_check(db, stmt, 0) != 0) {
-    if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY) {
+  if (step_and_check(db, stmt, 0) != 0)
+  {
+    if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY)
+    {
       result = D_FOREIGNKEY_VIOLATION;
     }
     goto cleanup;
@@ -182,7 +201,8 @@ cleanup:
   return result;
 }
 
-int db_get_item_by_code(const char *input_item_code, Item *item) {
+int db_get_item_by_code(const char *input_item_code, Item *item)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *search_stmt = NULL;
   int result = D_ERROR;
@@ -192,7 +212,8 @@ int db_get_item_by_code(const char *input_item_code, Item *item) {
       "FROM items "
       "WHERE item_code = ?;";
 
-  if (prepare_stmt(db, select_sql, &search_stmt) == 1) {
+  if (prepare_stmt(db, select_sql, &search_stmt) == 1)
+  {
     goto cleanup;
   }
 
@@ -200,7 +221,8 @@ int db_get_item_by_code(const char *input_item_code, Item *item) {
 
   result = sqlite3_step(search_stmt);
 
-  if (result == SQLITE_ROW) {
+  if (result == SQLITE_ROW)
+  {
     item->item_id = sqlite3_column_int(search_stmt, 0);
     snprintf(item->item_code, sizeof(item->item_code), "%s",
              (char *)sqlite3_column_text(search_stmt, 1));
@@ -209,7 +231,9 @@ int db_get_item_by_code(const char *input_item_code, Item *item) {
     item->current_qty = sqlite3_column_int(search_stmt, 3);
     item->total_value = sqlite3_column_double(search_stmt, 4);
     result = D_SUCCESS;
-  } else if (result == SQLITE_DONE) {
+  }
+  else if (result == SQLITE_DONE)
+  {
     result = D_NOT_FOUND;
   }
 
@@ -222,7 +246,8 @@ cleanup:
 }
 
 // Inventory Menu DB Functions
-int db_add_stock(int item_id, int qty, double unit_cost) {
+int db_add_stock(int item_id, int qty, double unit_cost)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *add_stmt = NULL;
   sqlite3_stmt *update_stmt = NULL;
@@ -234,11 +259,13 @@ int db_add_stock(int item_id, int qty, double unit_cost) {
                      "(added_qty, unit_cost, unused_qty, item_id) "
                      "VALUES (?, ?, ?, ?);";
 
-  if (begin_txn(db) != 0) {
+  if (begin_txn(db) != 0)
+  {
     goto cleanup;
   }
 
-  if (prepare_stmt(db, insert_sql, &add_stmt) == 1) {
+  if (prepare_stmt(db, insert_sql, &add_stmt) == 1)
+  {
     goto cleanup;
   }
 
@@ -247,7 +274,8 @@ int db_add_stock(int item_id, int qty, double unit_cost) {
   sqlite3_bind_int(add_stmt, 3, qty);
   sqlite3_bind_int(add_stmt, 4, item_id);
 
-  if (step_and_check(db, add_stmt, 0) != 0) {
+  if (step_and_check(db, add_stmt, 0) != 0)
+  {
     goto txn_error;
   }
 
@@ -257,7 +285,8 @@ int db_add_stock(int item_id, int qty, double unit_cost) {
                      "total_value = total_value + ? "
                      "WHERE id = ?;";
 
-  if (prepare_stmt(db, update_sql, &update_stmt) == 1) {
+  if (prepare_stmt(db, update_sql, &update_stmt) == 1)
+  {
     goto txn_error;
   }
 
@@ -265,11 +294,13 @@ int db_add_stock(int item_id, int qty, double unit_cost) {
   sqlite3_bind_double(update_stmt, 2, total_value);
   sqlite3_bind_int(update_stmt, 3, item_id);
 
-  if (step_and_check(db, update_stmt, 0) != 0) {
+  if (step_and_check(db, update_stmt, 0) != 0)
+  {
     goto txn_error;
   }
 
-  if (commit_txn(db) != 0) {
+  if (commit_txn(db) != 0)
+  {
     goto txn_error;
   }
 
@@ -288,7 +319,8 @@ cleanup:
   return result;
 }
 
-int db_issue_stock(Item item, int issue_qty) {
+int db_issue_stock(Item item, int issue_qty)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *select_add_stmt = NULL;
   sqlite3_stmt *issue_stmt = NULL;
@@ -299,11 +331,13 @@ int db_issue_stock(Item item, int issue_qty) {
   int issue_id;
   double total_cost = 0;
 
-  if (begin_txn(db) != 0) {
+  if (begin_txn(db) != 0)
+  {
     goto cleanup;
   }
 
-  if (item.current_qty < issue_qty) {
+  if (item.current_qty < issue_qty)
+  {
     result = D_NOT_ENOUGH_STOCK;
     goto cleanup;
   }
@@ -313,14 +347,16 @@ int db_issue_stock(Item item, int issue_qty) {
                            "(issued_qty, item_id) "
                            "VALUES (?, ?);";
 
-  if (prepare_stmt(db, insert_issue_sql, &issue_stmt) == 1) {
+  if (prepare_stmt(db, insert_issue_sql, &issue_stmt) == 1)
+  {
     goto txn_error;
   }
 
   sqlite3_bind_int(issue_stmt, 1, issue_qty);
   sqlite3_bind_int(issue_stmt, 2, item.item_id);
 
-  if (step_and_check(db, issue_stmt, 0) != 0) {
+  if (step_and_check(db, issue_stmt, 0) != 0)
+  {
     goto txn_error;
   }
 
@@ -332,7 +368,8 @@ int db_issue_stock(Item item, int issue_qty) {
                              "WHERE item_id = ? AND unused_qty > 0 "
                              "ORDER BY id ASC;";
 
-  if (prepare_stmt(db, select_add_txn_sql, &select_add_stmt) == 1) {
+  if (prepare_stmt(db, select_add_txn_sql, &select_add_stmt) == 1)
+  {
     goto txn_error;
   }
 
@@ -344,7 +381,8 @@ int db_issue_stock(Item item, int issue_qty) {
       "(issued_qty, stock_issues_id, stock_addition_id) "
       "VALUES (?, ?, ?);";
 
-  if (prepare_stmt(db, insert_relation_sql, &relation_stmt) == 1) {
+  if (prepare_stmt(db, insert_relation_sql, &relation_stmt) == 1)
+  {
     goto txn_error;
   }
 
@@ -353,20 +391,26 @@ int db_issue_stock(Item item, int issue_qty) {
                          "SET unused_qty = unused_qty - ? "
                          "WHERE id = ?;";
 
-  if (prepare_stmt(db, update_add_sql, &update_add_stmt) == 1) {
+  if (prepare_stmt(db, update_add_sql, &update_add_stmt) == 1)
+  {
     goto txn_error;
   }
 
   // Process FIFO stock issue
   int remaining_qty = issue_qty;
-  while (remaining_qty > 0) {
+  while (remaining_qty > 0)
+  {
 
     int rc = sqlite3_step(select_add_stmt);
 
-    if (rc != SQLITE_ROW) {
-      if (rc != SQLITE_DONE) {
+    if (rc != SQLITE_ROW)
+    {
+      if (rc != SQLITE_DONE)
+      {
         fprintf(stderr, "Sqlite Error: %s\n", sqlite3_errmsg(db));
-      } else {
+      }
+      else
+      {
         result = D_NOT_ENOUGH_FIFO_STOCK;
       }
       goto txn_error;
@@ -380,9 +424,12 @@ int db_issue_stock(Item item, int issue_qty) {
 
     // This checks if the unused qty of the selected add txn is more than the
     // remain qty to be issued
-    if (txn_unused_qty < remaining_qty) {
+    if (txn_unused_qty < remaining_qty)
+    {
       issue_qty_current_txn = txn_unused_qty;
-    } else {
+    }
+    else
+    {
       issue_qty_current_txn = remaining_qty;
     }
 
@@ -395,7 +442,8 @@ int db_issue_stock(Item item, int issue_qty) {
     sqlite3_bind_int(relation_stmt, 2, issue_id);
     sqlite3_bind_int(relation_stmt, 3, add_txn_id);
 
-    if (step_and_check(db, relation_stmt, 0) != 0) {
+    if (step_and_check(db, relation_stmt, 0) != 0)
+    {
       goto txn_error;
     }
 
@@ -403,7 +451,8 @@ int db_issue_stock(Item item, int issue_qty) {
     sqlite3_bind_int(update_add_stmt, 1, issue_qty_current_txn);
     sqlite3_bind_int(update_add_stmt, 2, add_txn_id);
 
-    if (step_and_check(db, update_add_stmt, 0) != 0) {
+    if (step_and_check(db, update_add_stmt, 0) != 0)
+    {
       goto txn_error;
     }
 
@@ -417,7 +466,8 @@ int db_issue_stock(Item item, int issue_qty) {
                          "total_value = total_value - ? "
                          "WHERE id = ?;";
 
-  if (prepare_stmt(db, update_itm_sql, &update_itm_stmt) == 1) {
+  if (prepare_stmt(db, update_itm_sql, &update_itm_stmt) == 1)
+  {
     goto txn_error;
   }
 
@@ -425,11 +475,13 @@ int db_issue_stock(Item item, int issue_qty) {
   sqlite3_bind_double(update_itm_stmt, 2, total_cost);
   sqlite3_bind_int(update_itm_stmt, 3, item.item_id);
 
-  if (step_and_check(db, update_itm_stmt, 0) != 0) {
+  if (step_and_check(db, update_itm_stmt, 0) != 0)
+  {
     goto txn_error;
   }
 
-  if (commit_txn(db) != 0) {
+  if (commit_txn(db) != 0)
+  {
     goto txn_error;
   }
 
@@ -454,7 +506,8 @@ cleanup:
   return result;
 }
 
-int db_get_all_stock_additions(Stock_Addition **additions, int *count) {
+int db_get_all_stock_additions(Stock_Addition **additions, int *count)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *stmt = NULL;
   *additions = NULL;
@@ -468,29 +521,34 @@ int db_get_all_stock_additions(Stock_Addition **additions, int *count) {
               "JOIN items AS i ON sa.item_id = i.id "
               "ORDER BY sa.id ASC;";
 
-  if (prepare_stmt(db, sql, &stmt) != 0) {
+  if (prepare_stmt(db, sql, &stmt) != 0)
+  {
     goto cleanup;
   }
 
   int row_count = 0;
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
     row_count++;
   }
 
-  if (row_count == 0) {
+  if (row_count == 0)
+  {
     result = D_NOT_FOUND;
     goto cleanup;
   }
 
   *additions = malloc(sizeof(Stock_Addition) * row_count);
-  if (!*additions) {
+  if (!*additions)
+  {
     result = D_MEMORY_ALLOC_FAILED;
     goto cleanup;
   }
 
   sqlite3_reset(stmt);
   int i = 0;
-  while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count) {
+  while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count)
+  {
     Stock_Addition *addition = &(*additions)[i];
 
     addition->addition_id = sqlite3_column_int(stmt, 0);
@@ -520,7 +578,8 @@ int db_get_all_stock_additions(Stock_Addition **additions, int *count) {
 cleanup:
   if (stmt)
     sqlite3_finalize(stmt);
-  if (result != D_SUCCESS && *additions) {
+  if (result != D_SUCCESS && *additions)
+  {
     free(*additions);
     *additions = NULL;
     *count = 0;
@@ -528,7 +587,8 @@ cleanup:
   return result;
 }
 
-int db_get_all_stock_issues(Stock_Issue **issues, int *count) {
+int db_get_all_stock_issues(Stock_Issue **issues, int *count)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *stmt = NULL;
   *issues = NULL;
@@ -546,29 +606,34 @@ int db_get_all_stock_issues(Stock_Issue **issues, int *count) {
       "GROUP BY si.id, si.item_id, i.item_code, i.item_name, si.issued_qty "
       "ORDER BY si.id ASC;";
 
-  if (prepare_stmt(db, sql, &stmt) == 1) {
+  if (prepare_stmt(db, sql, &stmt) == 1)
+  {
     goto cleanup;
   }
 
   int row_count = 0;
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
+  while (sqlite3_step(stmt) == SQLITE_ROW)
+  {
     row_count++;
   }
 
-  if (row_count == 0) {
+  if (row_count == 0)
+  {
     result = D_NOT_FOUND;
     goto cleanup;
   }
 
   *issues = malloc(sizeof(Stock_Issue) * row_count);
-  if (!*issues) {
+  if (!*issues)
+  {
     result = D_MEMORY_ALLOC_FAILED;
     goto cleanup;
   }
 
   sqlite3_reset(stmt);
   int i = 0;
-  while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count) {
+  while (sqlite3_step(stmt) == SQLITE_ROW && i < row_count)
+  {
     Stock_Issue *issue = &(*issues)[i];
 
     issue->issue_id = sqlite3_column_int(stmt, 0);
@@ -596,7 +661,8 @@ int db_get_all_stock_issues(Stock_Issue **issues, int *count) {
 cleanup:
   if (stmt)
     sqlite3_finalize(stmt);
-  if (result != D_SUCCESS && *issues) {
+  if (result != D_SUCCESS && *issues)
+  {
     free(*issues);
     *issues = NULL;
     *count = 0;
@@ -604,7 +670,8 @@ cleanup:
   return result;
 }
 
-int db_get_stock_addition_by_id(int addition_id, Stock_Addition *addition) {
+int db_get_stock_addition_by_id(int addition_id, Stock_Addition *addition)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *stmt = NULL;
   int result = D_ERROR;
@@ -616,14 +683,16 @@ int db_get_stock_addition_by_id(int addition_id, Stock_Addition *addition) {
               "JOIN items AS i ON sa.item_id = i.id "
               "WHERE sa.id = ?;";
 
-  if (prepare_stmt(db, sql, &stmt) != 0) {
+  if (prepare_stmt(db, sql, &stmt) != 0)
+  {
     goto cleanup;
   }
 
   sqlite3_bind_int(stmt, 1, addition_id);
 
   int rc = sqlite3_step(stmt);
-  if (rc == SQLITE_ROW) {
+  if (rc == SQLITE_ROW)
+  {
     addition->addition_id = sqlite3_column_int(stmt, 0);
     addition->item_id = sqlite3_column_int(stmt, 1);
 
@@ -641,7 +710,9 @@ int db_get_stock_addition_by_id(int addition_id, Stock_Addition *addition) {
     addition->total_cost = sqlite3_column_double(stmt, 7);
 
     result = D_SUCCESS;
-  } else if (rc == SQLITE_DONE) {
+  }
+  else if (rc == SQLITE_DONE)
+  {
     result = D_NOT_FOUND;
   }
 
@@ -653,27 +724,32 @@ cleanup:
   return result;
 }
 
-int db_delete_stock_addition(Stock_Addition addition) {
+int db_delete_stock_addition(Stock_Addition addition)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *delete_stmt = NULL;
   sqlite3_stmt *update_stmt = NULL;
   int result = D_ERROR;
 
-  if (begin_txn(db) != 0) {
+  if (begin_txn(db) != 0)
+  {
     goto cleanup;
   }
 
   // Delete the stock addition
   char *delete_sql = "DELETE FROM stock_additions WHERE id = ?;";
 
-  if (prepare_stmt(db, delete_sql, &delete_stmt) != 0) {
+  if (prepare_stmt(db, delete_sql, &delete_stmt) != 0)
+  {
     goto txn_error;
   }
 
   sqlite3_bind_int(delete_stmt, 1, addition.addition_id);
 
-  if (step_and_check(db, delete_stmt, 0) != 0) {
-    if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY) {
+  if (step_and_check(db, delete_stmt, 0) != 0)
+  {
+    if (sqlite3_extended_errcode(db) == SQLITE_CONSTRAINT_FOREIGNKEY)
+    {
       result = D_FOREIGNKEY_VIOLATION;
     }
     goto txn_error;
@@ -685,7 +761,8 @@ int db_delete_stock_addition(Stock_Addition addition) {
                      "total_value = total_value - ? "
                      "WHERE id = ?;";
 
-  if (prepare_stmt(db, update_sql, &update_stmt) != 0) {
+  if (prepare_stmt(db, update_sql, &update_stmt) != 0)
+  {
     goto txn_error;
   }
 
@@ -693,11 +770,13 @@ int db_delete_stock_addition(Stock_Addition addition) {
   sqlite3_bind_double(update_stmt, 2, addition.added_qty * addition.unit_cost);
   sqlite3_bind_int(update_stmt, 3, addition.item_id);
 
-  if (step_and_check(db, update_stmt, 0) != 0) {
+  if (step_and_check(db, update_stmt, 0) != 0)
+  {
     goto txn_error;
   }
 
-  if (commit_txn(db) != 0) {
+  if (commit_txn(db) != 0)
+  {
     goto txn_error;
   }
 
@@ -716,7 +795,8 @@ cleanup:
   return result;
 }
 
-int db_get_stock_issue_by_id(int issue_id, Stock_Issue *issue) {
+int db_get_stock_issue_by_id(int issue_id, Stock_Issue *issue)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *stmt = NULL;
   int result = D_ERROR;
@@ -732,14 +812,16 @@ int db_get_stock_issue_by_id(int issue_id, Stock_Issue *issue) {
       "WHERE si.id = ? "
       "GROUP BY si.id, si.item_id, i.item_code, i.item_name, si.issued_qty;";
 
-  if (prepare_stmt(db, sql, &stmt) != 0) {
+  if (prepare_stmt(db, sql, &stmt) != 0)
+  {
     goto cleanup;
   }
 
   sqlite3_bind_int(stmt, 1, issue_id);
 
   int rc = sqlite3_step(stmt);
-  if (rc == SQLITE_ROW) {
+  if (rc == SQLITE_ROW)
+  {
     issue->issue_id = sqlite3_column_int(stmt, 0);
     issue->item_id = sqlite3_column_int(stmt, 1);
 
@@ -755,7 +837,9 @@ int db_get_stock_issue_by_id(int issue_id, Stock_Issue *issue) {
     issue->total_cost = sqlite3_column_double(stmt, 5);
 
     result = D_SUCCESS;
-  } else if (rc == SQLITE_DONE) {
+  }
+  else if (rc == SQLITE_DONE)
+  {
     result = D_NOT_FOUND;
   }
 
@@ -767,7 +851,8 @@ cleanup:
   return result;
 }
 
-int db_delete_stock_issue(Stock_Issue issue) {
+int db_delete_stock_issue(Stock_Issue issue)
+{
   sqlite3 *db = get_db();
   sqlite3_stmt *get_relations_stmt = NULL;
   sqlite3_stmt *delete_relations_stmt = NULL;
@@ -776,7 +861,8 @@ int db_delete_stock_issue(Stock_Issue issue) {
   sqlite3_stmt *update_item_stmt = NULL;
   int result = D_ERROR;
 
-  if (begin_txn(db) != 0) {
+  if (begin_txn(db) != 0)
+  {
     goto cleanup;
   }
 
@@ -785,7 +871,8 @@ int db_delete_stock_issue(Stock_Issue issue) {
                             "FROM stock_issues_add_relation "
                             "WHERE stock_issues_id = ?;";
 
-  if (prepare_stmt(db, get_relations_sql, &get_relations_stmt) != 0) {
+  if (prepare_stmt(db, get_relations_sql, &get_relations_stmt) != 0)
+  {
     goto txn_error;
   }
 
@@ -796,19 +883,22 @@ int db_delete_stock_issue(Stock_Issue issue) {
                                "SET unused_qty = unused_qty + ? "
                                "WHERE id = ?;";
 
-  if (prepare_stmt(db, update_additions_sql, &update_additions_stmt) != 0) {
+  if (prepare_stmt(db, update_additions_sql, &update_additions_stmt) != 0)
+  {
     goto txn_error;
   }
 
   // Process each relation to restore unused quantities
-  while (sqlite3_step(get_relations_stmt) == SQLITE_ROW) {
+  while (sqlite3_step(get_relations_stmt) == SQLITE_ROW)
+  {
     int addition_id = sqlite3_column_int(get_relations_stmt, 0);
     int issued_qty = sqlite3_column_int(get_relations_stmt, 1);
 
     sqlite3_bind_int(update_additions_stmt, 1, issued_qty);
     sqlite3_bind_int(update_additions_stmt, 2, addition_id);
 
-    if (step_and_check(db, update_additions_stmt, 0) != 0) {
+    if (step_and_check(db, update_additions_stmt, 0) != 0)
+    {
       goto txn_error;
     }
 
@@ -819,26 +909,30 @@ int db_delete_stock_issue(Stock_Issue issue) {
   char *delete_relations_sql = "DELETE FROM stock_issues_add_relation "
                                "WHERE stock_issues_id = ?;";
 
-  if (prepare_stmt(db, delete_relations_sql, &delete_relations_stmt) != 0) {
+  if (prepare_stmt(db, delete_relations_sql, &delete_relations_stmt) != 0)
+  {
     goto txn_error;
   }
 
   sqlite3_bind_int(delete_relations_stmt, 1, issue.issue_id);
 
-  if (step_and_check(db, delete_relations_stmt, 0) != 0) {
+  if (step_and_check(db, delete_relations_stmt, 0) != 0)
+  {
     goto txn_error;
   }
 
   // Delete the stock issue
   char *delete_issue_sql = "DELETE FROM stock_issues WHERE id = ?;";
 
-  if (prepare_stmt(db, delete_issue_sql, &delete_issue_stmt) != 0) {
+  if (prepare_stmt(db, delete_issue_sql, &delete_issue_stmt) != 0)
+  {
     goto txn_error;
   }
 
   sqlite3_bind_int(delete_issue_stmt, 1, issue.issue_id);
 
-  if (step_and_check(db, delete_issue_stmt, 0) != 0) {
+  if (step_and_check(db, delete_issue_stmt, 0) != 0)
+  {
     goto txn_error;
   }
 
@@ -848,7 +942,8 @@ int db_delete_stock_issue(Stock_Issue issue) {
                           "total_value = total_value + ? "
                           "WHERE id = ?;";
 
-  if (prepare_stmt(db, update_item_sql, &update_item_stmt) != 0) {
+  if (prepare_stmt(db, update_item_sql, &update_item_stmt) != 0)
+  {
     goto txn_error;
   }
 
@@ -856,11 +951,13 @@ int db_delete_stock_issue(Stock_Issue issue) {
   sqlite3_bind_double(update_item_stmt, 2, issue.total_cost);
   sqlite3_bind_int(update_item_stmt, 3, issue.item_id);
 
-  if (step_and_check(db, update_item_stmt, 0) != 0) {
+  if (step_and_check(db, update_item_stmt, 0) != 0)
+  {
     goto txn_error;
   }
 
-  if (commit_txn(db) != 0) {
+  if (commit_txn(db) != 0)
+  {
     goto txn_error;
   }
 

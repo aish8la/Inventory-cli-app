@@ -4,7 +4,8 @@
 #include "globals.h"
 #include "sqlite3.h"
 
-enum db_error {
+enum db_error
+{
   D_SUCCESS,
   D_ERROR,
   D_NOT_FOUND,

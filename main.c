@@ -6,11 +6,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(void) {
+int main(void)
+{
 
   int db_rc = initialize_db();
 
-  if (db_rc == 1) {
+  if (db_rc == 1)
+  {
     printf("Failed to initialize DB");
     goto error_cleanup;
   }
@@ -18,26 +20,32 @@ int main(void) {
   int login_attempts = 0;
   int rem_logins = MAX_LOGIN_ATTEMPTS;
 
-  do {
+  do
+  {
     clear_console();
 
-    if (login() == 1) {
+    if (login() == 1)
+    {
       break;
-    } else {
+    }
+    else
+    {
       login_attempts++;
       rem_logins--;
     }
 
     printf("\n\nLogin failed. Invalid username or password.\n\n");
 
-    if (rem_logins != 0) {
+    if (rem_logins != 0)
+    {
       printf("You have %d more attempts left\n", rem_logins);
       wait_for_enter();
     }
 
   } while (login_attempts < MAX_LOGIN_ATTEMPTS);
 
-  if (login_attempts >= MAX_LOGIN_ATTEMPTS) {
+  if (login_attempts >= MAX_LOGIN_ATTEMPTS)
+  {
     printf("Max Login Attempts reached, stopping program");
     goto close_cleanup;
   }

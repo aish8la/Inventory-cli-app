@@ -9,7 +9,8 @@
 #include "utilities.h"
 #include <stdio.h>
 
-int add_stock(void) {
+int add_stock(void)
+{
   char input_itm_code[ITEM_CODE_LENGTH + 1];
   int qty;
   double unit_cost;
@@ -19,7 +20,8 @@ int add_stock(void) {
   read_input(input_itm_code, sizeof(input_itm_code));
 
   int result = db_get_item_by_code(input_itm_code, &item);
-  if (result != D_SUCCESS) {
+  if (result != D_SUCCESS)
+  {
     printf("\n\nItem could not be found\n");
     goto cleanup;
   }
@@ -38,7 +40,8 @@ int add_stock(void) {
   scanf("%lf", &unit_cost);
   clear_input_buffer();
 
-  if (qty <= 0 || unit_cost <= 0) {
+  if (qty <= 0 || unit_cost <= 0)
+  {
     printf("\n\nQuantity or Value should be a non zero positive number\n\n");
     goto cleanup;
   }
@@ -47,9 +50,12 @@ int add_stock(void) {
 
   result = db_add_stock(item.item_id, qty, unit_cost);
 
-  if (result == D_SUCCESS) {
+  if (result == D_SUCCESS)
+  {
     printf("\n\nStock Added Successfully\n");
-  } else {
+  }
+  else
+  {
     printf("\n\nError Adding Stock\n");
   }
 
@@ -60,7 +66,8 @@ cleanup:
   return 0;
 }
 
-int issue_stock(void) {
+int issue_stock(void)
+{
   char input_itm_code[ITEM_CODE_LENGTH + 1];
   int issue_qty;
   Item item;
@@ -69,7 +76,8 @@ int issue_stock(void) {
   read_input(input_itm_code, sizeof(input_itm_code));
 
   int result = db_get_item_by_code(input_itm_code, &item);
-  if (result != D_SUCCESS) {
+  if (result != D_SUCCESS)
+  {
     printf("\n\nItem could not be found\n");
     goto cleanup;
   }
@@ -78,7 +86,8 @@ int issue_stock(void) {
 
   display_selected_item_qty(&item);
 
-  if (item.current_qty <= 0) {
+  if (item.current_qty <= 0)
+  {
     printf("\nSelected Item has no stock. Add Stock before Issue.\n");
     goto cleanup;
   }
@@ -89,19 +98,22 @@ int issue_stock(void) {
   scanf("%d", &issue_qty);
   clear_input_buffer();
 
-  if (issue_qty <= 0) {
+  if (issue_qty <= 0)
+  {
     printf("\n\nQuantity should be a non zero positive number\n\n");
     goto cleanup;
   }
 
-  if (issue_qty > item.current_qty) {
+  if (issue_qty > item.current_qty)
+  {
     printf("\n\nNot enough stock to issue.\n\n");
     goto cleanup;
   }
 
   result = db_issue_stock(item, issue_qty);
 
-  switch (result) {
+  switch (result)
+  {
   case D_SUCCESS:
     printf("\nStock Issued Successfully");
     break;
@@ -120,13 +132,15 @@ cleanup:
   return 0;
 }
 
-int view_additions(void) {
+int view_additions(void)
+{
   Stock_Addition *additions = NULL;
   int count = 0;
 
   int result = db_get_all_stock_additions(&additions, &count);
 
-  switch (result) {
+  switch (result)
+  {
   case D_SUCCESS:
     display_additions_table(additions, count, format_additions_header,
                             format_additions_row);
@@ -139,7 +153,8 @@ int view_additions(void) {
     break;
   }
 
-  if (additions) {
+  if (additions)
+  {
     free(additions);
   }
 
@@ -147,13 +162,15 @@ int view_additions(void) {
   return 0;
 }
 
-int view_issues(void) {
+int view_issues(void)
+{
   Stock_Issue *issues = NULL;
   int count = 0;
 
   int result = db_get_all_stock_issues(&issues, &count);
 
-  switch (result) {
+  switch (result)
+  {
   case D_SUCCESS:
     display_issues_table(issues, count, format_issues_header,
                          format_issues_row);
@@ -166,7 +183,8 @@ int view_issues(void) {
     break;
   }
 
-  if (issues) {
+  if (issues)
+  {
     free(issues);
   }
 
@@ -174,16 +192,22 @@ int view_issues(void) {
   return 0;
 }
 
-int view_inventory(void) {
+int view_inventory(void)
+{
   Item *items = NULL;
   int count = 0;
 
   int result = db_get_all_items(&items, &count);
-  if (result == D_NOT_FOUND) {
+  if (result == D_NOT_FOUND)
+  {
     printf("No items found in Inventory.\n");
-  } else if (result != D_SUCCESS) {
+  }
+  else if (result != D_SUCCESS)
+  {
     printf("\nDatabase Error\n\n");
-  } else {
+  }
+  else
+  {
     display_item_table(items, count, format_inventory_header,
                        format_inventory_row);
   }
@@ -194,7 +218,8 @@ int view_inventory(void) {
   return 0;
 }
 
-int delete_stock_addition(void) {
+int delete_stock_addition(void)
+{
   int addition_id;
   Stock_Addition addition;
 
@@ -207,7 +232,8 @@ int delete_stock_addition(void) {
 
   // Check if addition exists and display
   int result = db_get_stock_addition_by_id(addition_id, &addition);
-  if (result != D_SUCCESS) {
+  if (result != D_SUCCESS)
+  {
     printf("Stock Addition with ID '%d' not found.\n", addition_id);
     goto cleanup;
   }
@@ -216,7 +242,8 @@ int delete_stock_addition(void) {
   display_selected_addition(&addition);
 
   // Check if any quantity has been used
-  if (addition.unused_qty != addition.added_qty) {
+  if (addition.unused_qty != addition.added_qty)
+  {
     printf("\nWARNING: This addition has been used. Cannot Delete.\n");
     goto cleanup;
   }
@@ -225,13 +252,15 @@ int delete_stock_addition(void) {
   char *prompt = "\nConfirm Delete Operation ?\n";
   char *cancel_msg = "\nCancelled Delete Operation.\n";
 
-  if (get_user_confirmation(prompt, cancel_msg) != 0) {
+  if (get_user_confirmation(prompt, cancel_msg) != 0)
+  {
     goto cleanup;
   }
 
   // Perform the delete operation
   result = db_delete_stock_addition(addition);
-  switch (result) {
+  switch (result)
+  {
   case D_SUCCESS:
     printf("Stock Addition [%d] Deleted Successfully", addition_id);
     break;
@@ -251,7 +280,8 @@ cleanup:
   return 0;
 }
 
-int delete_stock_issue(void) {
+int delete_stock_issue(void)
+{
   int issue_id;
   Stock_Issue issue;
 
@@ -264,7 +294,8 @@ int delete_stock_issue(void) {
 
   // Check if issue exists and display
   int result = db_get_stock_issue_by_id(issue_id, &issue);
-  if (result != D_SUCCESS) {
+  if (result != D_SUCCESS)
+  {
     printf("Stock Issue with ID '%d' not found.\n", issue_id);
     goto cleanup;
   }
@@ -276,13 +307,15 @@ int delete_stock_issue(void) {
   char *prompt = "\nConfirm Delete Operation ?\n";
   char *cancel_msg = "\nCancelled Delete Operation.\n";
 
-  if (get_user_confirmation(prompt, cancel_msg) != 0) {
+  if (get_user_confirmation(prompt, cancel_msg) != 0)
+  {
     goto cleanup;
   }
 
   // Perform the delete operation
   result = db_delete_stock_issue(issue);
-  switch (result) {
+  switch (result)
+  {
   case D_SUCCESS:
     printf("Stock Issue [%d] Deleted Successfully", issue_id);
     break;

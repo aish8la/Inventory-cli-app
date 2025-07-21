@@ -7,15 +7,18 @@
 
 static sqlite3 *db_instance = NULL;
 
-int connect_db(const char *db_name) {
+int connect_db(const char *db_name)
+{
 
-  if (db_instance != NULL) {
+  if (db_instance != NULL)
+  {
     return 0;
   }
 
   int rc = sqlite3_open(db_name, &db_instance);
 
-  if (rc != SQLITE_OK) {
+  if (rc != SQLITE_OK)
+  {
     fprintf(stderr, "Database could not be opened: %s\n",
             sqlite3_errmsg(db_instance));
     db_instance = NULL;
@@ -24,7 +27,8 @@ int connect_db(const char *db_name) {
   }
 
   rc = sqlite3_exec(db_instance, "PRAGMA foreign_keys = ON", 0, 0, NULL);
-  if (rc != SQLITE_OK) {
+  if (rc != SQLITE_OK)
+  {
     fprintf(stderr, "Foreign Key could not be enabled: %s\n",
             sqlite3_errmsg(db_instance));
     db_instance = NULL;
@@ -37,8 +41,10 @@ int connect_db(const char *db_name) {
 
 sqlite3 *get_db(void) { return db_instance; }
 
-void disconnect_db(void) {
-  if (db_instance != NULL) {
+void disconnect_db(void)
+{
+  if (db_instance != NULL)
+  {
     sqlite3_close(db_instance);
     db_instance = NULL;
   }
@@ -47,12 +53,16 @@ void disconnect_db(void) {
 // This is a callback for sqlite_exec to check 1 flag value from the database
 // and write it to the var address give to the sqlite_exec function
 int flag_value_callback(void *data, int argc, char **argv,
-                        char **arg_col_name) {
+                        char **arg_col_name)
+{
   int *flag_var =
       (int *)data; // typecasting the generic pointer into a integer pointer
-  if (argc > 0 && argv[0]) {
+  if (argc > 0 && argv[0])
+  {
     *flag_var = atoi(argv[0]);
-  } else {
+  }
+  else
+  {
     *flag_var = 0;
   }
 
@@ -61,7 +71,8 @@ int flag_value_callback(void *data, int argc, char **argv,
 
 // returns 0 if the current run is not the first time running (by checking the
 // flags table). returns 1 in case of sqlite errors or first time running;
-int check_init_flag(void) {
+int check_init_flag(void)
+{
   sqlite3 *db = get_db();
   int flag_value = 0;
   char *set_init_flag = "CREATE TABLE IF NOT EXISTS flags ("
@@ -74,18 +85,23 @@ int check_init_flag(void) {
   char *get_init_flag =
       "SELECT flag_value FROM flags WHERE flag_name = 'not_initial_run';";
 
-  if (run_sql(db, set_init_flag) != 0) {
+  if (run_sql(db, set_init_flag) != 0)
+  {
     return 1;
   }
 
   if (run_sql_with_cb(db, get_init_flag, flag_value_callback, &flag_value) !=
-      0) {
+      0)
+  {
     return 1;
   }
 
-  if (flag_value) {
+  if (flag_value)
+  {
     return 0;
-  } else {
+  }
+  else
+  {
     return 1;
   }
 }
@@ -137,9 +153,11 @@ const char *initial_queries[] = {
     "('ITM-004', 'RULER'),"
     "('ITM-005', 'SHARPENER');"};
 
-int initialize_db(void) {
+int initialize_db(void)
+{
 
-  if (connect_db("data.db") != 0) {
+  if (connect_db("data.db") != 0)
+  {
     return 1;
   }
 
@@ -147,14 +165,17 @@ int initialize_db(void) {
 
   /*check init returns 0 if the current run is not the first time so this check
   will return without running database initialization*/
-  if (!check_init_flag()) {
+  if (!check_init_flag())
+  {
     return 0;
   }
 
   int query_count = sizeof(initial_queries) / sizeof(initial_queries[0]);
 
-  for (int i = 0; i < query_count; i++) {
-    if (run_sql(db, initial_queries[i]) != 0) {
+  for (int i = 0; i < query_count; i++)
+  {
+    if (run_sql(db, initial_queries[i]) != 0)
+    {
       return 1;
     }
   }

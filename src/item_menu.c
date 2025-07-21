@@ -10,11 +10,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int add_item(void) {
+int add_item(void)
+{
   char item_code[ITEM_CODE_LENGTH + 1];
   char item_name[ITEM_NAME_LENGTH + 1];
 
-  while (1) {
+  while (1)
+  {
 
     clear_console();
 
@@ -24,19 +26,25 @@ int add_item(void) {
     printf("Enter Item Name [Max: %d characters]: ", ITEM_NAME_LENGTH);
     read_input(item_name, sizeof(item_name));
 
-    if (item_code[0] == '\0' || item_name[0] == '\0') {
+    if (item_code[0] == '\0' || item_name[0] == '\0')
+    {
       printf("Value Cannot be Blank");
       goto cleanup;
     }
 
     // Perform Database operation
     int result = db_add_item(item_code, item_name);
-    if (result == D_SUCCESS) {
+    if (result == D_SUCCESS)
+    {
       printf("\nAdded New Item [%s] Successfully.\n", item_code);
-    } else if (result == D_UNIQUE_CONSTRAINT_VIOLATION) {
+    }
+    else if (result == D_UNIQUE_CONSTRAINT_VIOLATION)
+    {
       printf("Item code already exists. Please use a unique code.\n");
       goto cleanup;
-    } else {
+    }
+    else
+    {
       printf("Error adding item.\n");
       goto cleanup;
     }
@@ -44,7 +52,8 @@ int add_item(void) {
     const char *add_another_msg = "\nWould you like to add another item ?";
     const char *cancel_msg = "\nDone Adding Items.";
 
-    if (get_user_confirmation(add_another_msg, cancel_msg) != 0) {
+    if (get_user_confirmation(add_another_msg, cancel_msg) != 0)
+    {
       break;
     }
   }
@@ -56,17 +65,23 @@ cleanup:
   return 0;
 }
 
-int view_items(void) {
+int view_items(void)
+{
 
   Item *items = NULL;
   int count = 0;
 
   int result = db_get_all_items(&items, &count);
-  if (result == D_NOT_FOUND) {
+  if (result == D_NOT_FOUND)
+  {
     printf("No items found in the database.\n");
-  } else if (result != D_SUCCESS) {
+  }
+  else if (result != D_SUCCESS)
+  {
     printf("\nDatabase Error\n\n");
-  } else {
+  }
+  else
+  {
     display_item_table(items, count, format_item_header, format_item_row);
   }
 
@@ -76,7 +91,8 @@ int view_items(void) {
   return 0;
 }
 
-int search_item(void) {
+int search_item(void)
+{
   char input_itm_code[ITEM_CODE_LENGTH + 1];
   Item item;
 
@@ -84,11 +100,16 @@ int search_item(void) {
   read_input(input_itm_code, sizeof(input_itm_code));
 
   int result = db_get_item_by_code(input_itm_code, &item);
-  if (result == D_NOT_FOUND) {
+  if (result == D_NOT_FOUND)
+  {
     printf("\n\nItem could not be found\n");
-  } else if (result != D_SUCCESS) {
+  }
+  else if (result != D_SUCCESS)
+  {
     printf("\nDatabase Error\n\n");
-  } else {
+  }
+  else
+  {
     // Uses the display format item header and row function to display the
     // searched item
     format_item_header();
@@ -99,7 +120,8 @@ int search_item(void) {
   return 0;
 }
 
-int edit_item(void) {
+int edit_item(void)
+{
   char input_itm_code[ITEM_CODE_LENGTH + 1];
   char new_itm_code[ITEM_CODE_LENGTH + 1];
   char new_itm_name[ITEM_NAME_LENGTH + 1];
@@ -110,7 +132,8 @@ int edit_item(void) {
   read_input(input_itm_code, sizeof(input_itm_code));
 
   int result = db_get_item_by_code(input_itm_code, &item);
-  if (result != D_SUCCESS) {
+  if (result != D_SUCCESS)
+  {
     printf("Item with code '%s' not found.\n", input_itm_code);
     goto cleanup;
   }
@@ -126,14 +149,16 @@ int edit_item(void) {
   printf("Enter Updated Item Name [Max: %d characters]: ", ITEM_NAME_LENGTH);
   read_input(new_itm_name, sizeof(new_itm_name));
 
-  if (new_itm_code[0] == '\0' || new_itm_name[0] == '\0') {
+  if (new_itm_code[0] == '\0' || new_itm_name[0] == '\0')
+  {
     printf("Value Cannot be Blank");
     goto cleanup;
   }
 
   // Perform Record Update
   result = db_update_item(input_itm_code, new_itm_code, new_itm_name);
-  switch (result) {
+  switch (result)
+  {
   case D_SUCCESS:
     printf("Record Updated Successfully");
     break;
@@ -155,7 +180,8 @@ cleanup:
   return 0;
 }
 
-int delete_item(void) {
+int delete_item(void)
+{
   char input_itm_code[ITEM_CODE_LENGTH + 1];
   Item item;
 
@@ -164,7 +190,8 @@ int delete_item(void) {
 
   // Check if Item exist and display
   int result = db_get_item_by_code(input_itm_code, &item);
-  if (result != D_SUCCESS) {
+  if (result != D_SUCCESS)
+  {
     printf("Item with code '%s' not found.\n", input_itm_code);
     goto cleanup;
   }
@@ -176,13 +203,15 @@ int delete_item(void) {
   char *prompt = "\nConfirm Delete Operation ?\n";
   char *cancel_msg = "\nCancelled Delete Operation.\n";
 
-  if (get_user_confirmation(prompt, cancel_msg) != 0) {
+  if (get_user_confirmation(prompt, cancel_msg) != 0)
+  {
     goto cleanup;
   }
 
   // Perform the Delete Operation
   result = db_delete_item(input_itm_code);
-  switch (result) {
+  switch (result)
+  {
   case D_SUCCESS:
     printf("Item [%s] Deleted Successfully", input_itm_code);
     break;
