@@ -59,12 +59,16 @@ int run_menu(const char *title, Menu_Item *items, int count) {
 
   while (1) {
     clear_console();
-    printf("\n ======== %s ======= \n", title);
+    printf("\n");
+    printf("================================\n");
+    printf("  %s\n", title);
+    printf("================================\n");
+    printf("\n");
 
     for (int i = 0; i < filtered_count; i++) {
-      printf("%d. %s\n", i + 1, filtered_list[i].label);
+      printf("Press [%d] => %s\n", i + 1, filtered_list[i].label);
     }
-    printf("0. Back\n");
+    printf("Press [0] => Back\n");
 
     printf("Choose => ");
     scanf("%d", &choice);
@@ -107,7 +111,7 @@ int run_main_menu(void) {
 
   int menu_count = sizeof(main_menu) / sizeof(main_menu[0]);
 
-  const char *title = "Main Menu";
+  const char *title = "MAIN MENU";
 
   int err = run_menu(title, main_menu, menu_count);
 
@@ -127,7 +131,7 @@ int item_menu(void) {
 
   int menu_count = sizeof(item_menu) / sizeof(item_menu[0]);
 
-  const char *title = "Item Menu";
+  const char *title = "ITEM MENU";
 
   int err = run_menu(title, item_menu, menu_count);
 
@@ -147,7 +151,7 @@ int invent_menu(void) {
 
   int menu_count = sizeof(invent_menu) / sizeof(invent_menu[0]);
 
-  const char *title = "Inventory Menu";
+  const char *title = "INVENTORY MENU";
 
   int err = run_menu(title, invent_menu, menu_count);
 
@@ -167,7 +171,7 @@ int stock_add_menu(void) {
 
   int menu_count = sizeof(add_menu) / sizeof(add_menu[0]);
 
-  const char *title = "Stock Addition Menu";
+  const char *title = "STOCK ADDITION MENU";
 
   int err = run_menu(title, add_menu, menu_count);
 
@@ -186,7 +190,7 @@ int stock_issue_menu(void) {
 
   int menu_count = sizeof(issue_menu) / sizeof(issue_menu[0]);
 
-  const char *title = "Stock Issue Menu Menu";
+  const char *title = "STOCK ISSUE MENU";
 
   int err = run_menu(title, issue_menu, menu_count);
 
