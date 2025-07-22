@@ -98,6 +98,11 @@ int run_menu(const char *title, Menu_Item *items, int count)
       continue;
     }
 
+    printf("\n");
+    printf("================================\n");
+    printf("  %s\n", filtered_list[choice - 1].label);
+    printf("================================\n");
+    printf("\n");
     int err = filtered_list[choice - 1].action();
 
     if (err != 0)
