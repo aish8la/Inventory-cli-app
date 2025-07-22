@@ -148,7 +148,7 @@ int item_menu(void)
       {"View Items", view_items, 1},
       {"Search Item", search_item, 1},
       {"Edit Item", edit_item, 2},
-      {"Delete Item", delete_item, 1},
+      {"Delete Item", delete_item, 3},
   };
 
   int menu_count = sizeof(item_menu) / sizeof(item_menu[0]);
