@@ -194,3 +194,25 @@ When you run the app:
    ```
 
    This batch file will start MSYS2 MinGW64 in the current working directory.
+
+# Credits and Third-Party Libraries
+
+## SQLite Database Engine
+
+This project uses SQLite, a C-language library that implements a small, fast, self-contained, high-reliability, full-featured, SQL database engine.
+
+- **Library:** SQLite Amalgamation
+- **Website:** https://www.sqlite.org/
+- **License:** Public Domain
+
+### SQLite License
+
+SQLite is in the **Public Domain** and does not require attribution. However, I acknowledge its use out of respect for the excellent work of the SQLite development team.
+
+For more information about SQLite, visit: https://www.sqlite.org/
+
+---
+
+## License Information for This Project
+
+Since this is a college assignment submission, the project code (excluding SQLite) is developed for educational purposes.
