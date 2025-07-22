@@ -2,6 +2,7 @@
  * Combined C Source File
  * Project: Inventory Management System
  * 
+ * 
  * Headers combined: globals.h, utilities.h, sqlite_helpers.h, login.h, display_table.h, menu.h, item_menu.h, invent_menu.h, db_functions.h, init_db.h
  * Sources combined: utilities.c, sqlite_helpers.c, init_db.c, db_functions.c, login.c, display_table.c, item_menu.c, invent_menu.c, menu.c, main.c
  */
@@ -2444,6 +2445,11 @@ int run_menu(const char *title, Menu_Item *items, int count)
       continue;
     }
 
+    printf("\n");
+    printf("================================\n");
+    printf("  %s\n", filtered_list[choice - 1].label);
+    printf("================================\n");
+    printf("\n");
     int err = filtered_list[choice - 1].action();
 
     if (err != 0)
