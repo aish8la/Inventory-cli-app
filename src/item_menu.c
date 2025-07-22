@@ -19,6 +19,11 @@ int add_item(void)
   {
 
     clear_console();
+    printf("\n");
+    printf("================================\n");
+    printf("  %s\n", "Add Item");
+    printf("================================\n");
+    printf("\n");
 
     printf("Enter Item Code (Must be Unique) [Max: %d characters]: ", ITEM_CODE_LENGTH);
     read_input(item_code, sizeof(item_code));
