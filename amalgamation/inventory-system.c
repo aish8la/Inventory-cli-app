@@ -1,10 +1,27 @@
 /*
  * Combined C Source File
  * Project: Inventory Management System
- * 
- * 
- * Headers combined: globals.h, utilities.h, sqlite_helpers.h, login.h, display_table.h, menu.h, item_menu.h, invent_menu.h, db_functions.h, init_db.h
- * Sources combined: utilities.c, sqlite_helpers.c, init_db.c, db_functions.c, login.c, display_table.c, item_menu.c, invent_menu.c, menu.c, main.c
+ *
+ * Description:
+ * This is the amalgamated version of the Inventory Management System project.
+ * It combines all headers and source files into a single C file for simplified compilation.
+ *
+ * To compile this file:
+ * - Ensure that the SQLite amalgamation files `sqlite3.h` and `sqlite3.c` are present in the same directory.
+ * - You can download the SQLite amalgamation from: https://sqlite.org/download.html
+ *
+ * For full project source code, modular files, and documentation, visit:
+ * https://github.com/aish8la/CIV-IT-Final-Project
+ *
+ * Combined Headers:
+ *   globals.h, utilities.h, sqlite_helpers.h, login.h,
+ *   display_table.h, menu.h, item_menu.h, invent_menu.h,
+ *   db_functions.h, init_db.h
+ *
+ * Combined Sources:
+ *   utilities.c, sqlite_helpers.c, init_db.c, db_functions.c,
+ *   login.c, display_table.c, item_menu.c, invent_menu.c,
+ *   menu.c, main.c
  */
 
 // ==================== STANDARD LIBRARY INCLUDES ====================
