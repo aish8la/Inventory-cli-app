@@ -1,4 +1,4 @@
-# CIV-IT-Final-Project
+# Inventory-CLI-App
 
 
 # Amalgamation
